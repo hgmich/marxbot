@@ -69,8 +69,8 @@ class General:
 
         embed = discord.Embed(title="Marx's 8-Ball", colour=9043968,
                               description="{0.mention} asked a question of my magic 8-ball.".format(user))
-        embed.add_field(name="â“ **Question**", value="*" + question + "*", inline=False)
-        embed.add_field(name="ðŸŽ± **Answer**", value=answer, inline=False)
+        embed.add_field(name="❓ **Question**", value="*" + question + "*", inline=False)
+        embed.add_field(name="🎱 **Answer**", value=answer, inline=False)
 
         # SEND THE ANSWER EMBED
         await self.bot.say(embed=embed)
