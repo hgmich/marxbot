@@ -170,3 +170,4 @@ fabric.properties
 # Config Files
 config.json
 roles.json
+count.json

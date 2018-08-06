@@ -60,6 +60,24 @@ async def on_member_join(member):
 @bot.event
 async def on_message(message):
 
+    # Check for Counting Message
+    if message.channel.id == settings.CHANNEL_ID_COUNTING:
+
+        new_number = message.content
+
+        # Is the message strictly a number?
+        if new_number.isdigit():
+            # Is it the next number?
+            if int(new_number) == (settings.CURRENT_COUNT + 1):
+                # Increase the Count
+                settings.CURRENT_COUNT = (new_number + 1)
+            else:
+                settings.CURRENT_COUNT = 0
+                await bot.send_message(message.channel, "**ALERT**: Sorry, that number is not correct. Start over at 1.")
+        else:
+            settings.CURRENT_COUNT = 0
+            await bot.send_message(message.channel, "**ALERT**: Sorry, that number is not correct. Start over at 1.")
+
     # Process the rest of the Commands
     await bot.process_commands(message)
 

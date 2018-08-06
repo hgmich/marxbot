@@ -19,6 +19,11 @@ CHANNEL_ID_LOBBY = config["welcome"]["lobby"]
 CHANNEL_ID_INFO = config["welcome"]["info"]
 CHANNEL_ID_UPDATES = config["welcome"]["updates"]
 
+# Counting
+CHANNEL_ID_COUNTING = config["counting"]["channel_id"]
+CURRENT_COUNT = config["counting"]["current"]
+RECORD_COUNT = config["counting"]["record"]
+
 # Twitter Settings
 CONSUMER_KEY = config["twitter"]["consumer_key"]
 CONSUMER_SECRET = config["twitter"]["consumer_secret"]
