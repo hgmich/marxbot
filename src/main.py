@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 import logging
-import asyncio
+import settings
 
 # BOT LOGGING
 
@@ -32,10 +32,9 @@ async def on_ready():
 @bot.event
 async def on_member_join(member):
     # Define Channels
-    # channel_general = bot.get_channel('338594020101980160')
-    channel_lobby = bot.get_channel('359182653934665749')
-    channel_info = bot.get_channel('356968473819348994')
-    channel_updates = bot.get_channel('356972304019881984')
+    channel_lobby = bot.get_channel(settings.CHANNEL_ID_LOBBY)
+    channel_info = bot.get_channel(settings.CHANNEL_ID_INFO)
+    channel_updates = bot.get_channel(settings.CHANNEL_ID_UPDATES)
 
     # Get Probie Role
     probie_role = discord.utils.get(member.server.roles, name='Psyops')
@@ -53,14 +52,6 @@ async def on_member_join(member):
            "Check out the {3.mention} channel for updates and announcements. Thanks, and again, welcome to LeftDisc!" \
            "".format(member, channel_lobby, channel_info, channel_updates)
 
-    wpm = "Hello comrade, and welcome to LeftDisc, a server, a home, for leftists. A few things to note: " \
-          "Take a look at the {0.mention} channel; it lists what we are about as well as the rules. " \
-          "Important news will be posted in {1.mention}. Again, thank you for joining the server, and the " \
-          "struggle. Please check {2.mention} for more information.".format(channel_info, channel_updates, channel_lobby)
-
-    # Send Welcome Message to the Probie Lobby
-    # await bot.send_message(channel_lobby, wmsg)
-
     # Send Private Welcome Message
     await bot.send_message(member, wmsg)
 
@@ -73,17 +64,14 @@ async def on_message(message):
     await bot.process_commands(message)
 
 
-# Auto-Pin on Pushpin Reactions in Shitposting Channels
+# Auto-Pin on Pushpin Reactions in Select Channels
 @bot.event
 async def on_reaction_add(reaction, user):
 
-    # Define Allowed Channels (Shitposting, Queer Shitposting, Nice Town, Health & Fitness, Queer)
+    # Define Allowed Channels
     channels = []
-    channels.append(bot.get_channel('386609440863813642'))
-    channels.append(bot.get_channel('361260914164498433'))
-    channels.append(bot.get_channel('425809470623318026'))
-    channels.append(bot.get_channel('449022450806554635'))
-    channels.append(bot.get_channel('359468983499489282'))
+    for channel_id in settings.ALLOWED_PIN_CHANNELS:
+        channels.append(bot.get_channel(channel_id))
 
     # Check if the reaction is pushpin
     if str(reaction.emoji) == '\N{PUSHPIN}' and reaction.count >= 4 and not reaction.message.pinned and reaction.message.channel in channels:
@@ -93,13 +81,6 @@ async def on_reaction_add(reaction, user):
         else:
             await bot.send_message(reaction.message.channel, "I cannot pin the message. We have reached the maximum "
                                                              "number of pins comrades!")
-
-# Goodbye Message
-# @bot.event
-# async def on_member_remove(member):
-#    channel = bot.get_channel('108369515502411776')
-#    fmt = ":wave: Goodbye {0}, we're sad to see you go!".format(member.name)
-#    await bot.send_message(channel, fmt)
 
 
 if __name__ == "__main__":
@@ -112,4 +93,4 @@ if __name__ == "__main__":
             if extension == 'tweet_watch':
                 raise e
 
-    bot.run('tokenhere')
+    bot.run(settings.BOT_TOKEN)

@@ -1,6 +1,5 @@
 import discord
 from discord.ext import commands
-import random
 import datetime
 
 
@@ -13,6 +12,7 @@ class Staff:
     # ********************************************** #
 
     # Load Extension
+
     @commands.command(pass_context=True)
     @commands.has_role("admins!!!")
     async def load(self, ctx, extension_name: str):
