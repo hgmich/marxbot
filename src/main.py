@@ -14,7 +14,7 @@ logger.addHandler(handler)
 description = '''Famed Economic Theorist and Supporter of the Working Peoples' Servers.'''
 
 # this specifies what extensions to load when the bot starts up
-startup_extensions = ["general", "roles", "music", "wiki", "staff"]
+startup_extensions = ["general", "roles", "music", "wiki", "staff", "tweet_watch"]
 
 bot = commands.Bot(command_prefix='!', description="Karl Marxbot.")
 
@@ -65,13 +65,34 @@ async def on_member_join(member):
     await bot.send_message(member, wmsg)
 
 
-# Check Messages and Award Scales
+# Check Messages
 @bot.event
 async def on_message(message):
 
     # Process the rest of the Commands
     await bot.process_commands(message)
 
+
+# Auto-Pin on Pushpin Reactions in Shitposting Channels
+@bot.event
+async def on_reaction_add(reaction, user):
+
+    # Define Allowed Channels (Shitposting, Queer Shitposting, Nice Town, Health & Fitness, Queer)
+    channels = []
+    channels.append(bot.get_channel('386609440863813642'))
+    channels.append(bot.get_channel('361260914164498433'))
+    channels.append(bot.get_channel('425809470623318026'))
+    channels.append(bot.get_channel('449022450806554635'))
+    channels.append(bot.get_channel('359468983499489282'))
+
+    # Check if the reaction is pushpin
+    if str(reaction.emoji) == '\N{PUSHPIN}' and reaction.count >= 4 and not reaction.message.pinned and reaction.message.channel in channels:
+        current_pinned = await bot.pins_from(reaction.message.channel)
+        if len(current_pinned) < 50:
+            await bot.pin_message(reaction.message)
+        else:
+            await bot.send_message(reaction.message.channel, "I cannot pin the message. We have reached the maximum "
+                                                             "number of pins comrades!")
 
 # Goodbye Message
 # @bot.event
