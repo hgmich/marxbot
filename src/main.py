@@ -73,10 +73,10 @@ async def on_message(message):
                 settings.CURRENT_COUNT = (new_number + 1)
             else:
                 settings.CURRENT_COUNT = 0
-                await bot.send_message(message.channel, "**ALERT**: Sorry, that number is not correct. Start over at 1.")
+                await bot.send_message(message.channel, "**ALERT**: Sorry, that number is not correct! Start over at 1.")
         else:
             settings.CURRENT_COUNT = 0
-            await bot.send_message(message.channel, "**ALERT**: Sorry, that number is not correct. Start over at 1.")
+            await bot.send_message(message.channel, "**ALERT**: Sorry, numbers only! Start over at 1.")
 
     # Process the rest of the Commands
     await bot.process_commands(message)
