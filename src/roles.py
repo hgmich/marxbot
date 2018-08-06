@@ -1,6 +1,8 @@
 import discord
 from discord.ext import commands
 import random
+import json
+import os
 
 
 class Roles:
@@ -10,6 +12,32 @@ class Roles:
     # ********************************************** #
     # ROLES BOT COMMANDS *************************** #
     # ********************************************** #
+
+    # COMMAND: !roles
+    @commands.command(name='roles', pass_context=True, aliases=['listroles'])
+    @commands.has_role("Comrades")
+    async def list_roles(self, ctx):
+        """Generates a list of joinable roles."""
+
+        # Get the JSON file thing.
+        file_path = os.path.normpath("{0}/roles.json".format(
+            os.path.dirname(os.path.realpath(__file__))
+        ))
+
+        with open(file_path, 'r') as file:
+            roles_dict = json.loads(file.read())
+
+        # Setup Message
+        message = "Below is a list of roles you may join.\n ```\n"
+
+        # Add Groups
+        for x in (sorted(set(roles_dict.values()))):
+            message += x + "\n"
+
+        # Finalize Message
+        message += "```"
+
+        await self.bot.say(message)
 
     # COMMAND: !join
     @commands.command(name='join', pass_context=True, aliases=['iam'])
@@ -21,100 +49,22 @@ class Roles:
         user = ctx.message.author
         server = ctx.message.server
 
-        # Define Allowed Groups
-        allowed_roles = ['queer',
-                         'not a man',
-                         'mental health',
-                         'poc',
-                         'person of color',
-                         'relationships',
-                         'they/them',
-                         'they',
-                         'them',
-                         'she/her',
-                         'she',
-                         'her',
-                         'he/him',
-                         'he',
-                         'him',
-                         'africa',
-                         'asia',
-                         'eu',
-                         'europe',
-                         'na',
-                         'north america',
-                         'oce',
-                         'oceania',
-                         'sa',
-                         'south america',
-                         'destiny (pc)',
-                         'destiny (psn)',
-                         'destiny (xbl)',
-                         'lol',
-                         'league of legends',
-                         'ow (pc)',
-                         'ow (psn)',
-                         'ow (xbl)',
-                         'overwatch (pc)',
-                         'overwatch (psn)',
-                         'overwatch (xbl)',
-                         'pubg',
-                         'r6s (pc)',
-                         'rainbow six siege (pc)',
-                         'movie night',
-                         'stream alerts']
+        # Get the JSON file thing.
+        file_path = os.path.normpath("{0}/roles.json".format(
+            os.path.dirname(os.path.realpath(__file__))
+        ))
 
-        # ROLE MATCH DICTIONARY
-        role_dictionary = {"queer": "Queer",
-                           "not a man": "Not a Man",
-                           "mental health": "Mental Health",
-                           "poc": "Person of Color",
-                           "person of color": "Person of Color",
-                           "relationships": "Relationships",
-                           "they/them": "They/Them",
-                           "they": "They/Them",
-                           "them": "They/Them",
-                           "she/her": "She/Her",
-                           "she": "She/Her",
-                           "her": "She/Her",
-                           "he/him": "He/Him",
-                           "he": "He/Him",
-                           "him": "He/Him",
-                           "africa": "Africa",
-                           "asia": "Asia",
-                           "eu": "Europe",
-                           "europe": "Europe",
-                           "na": "North America",
-                           "north america": "North America",
-                           "oce": "Oceania",
-                           "oceania": "Oceania",
-                           "sa": "South America",
-                           "south america": "South America",
-                           "destiny (pc)": "Destiny (PC)",
-                           "destiny (psn)": "Destiny (PSN)",
-                           "destiny (xbl)": "Destiny (XBL)",
-                           "lol": "League of Legends",
-                           "league of legends": "League of Legends",
-                           "ow (pc)": "Overwatch (PC)",
-                           "ow (psn)": "Overwatch (PSN)",
-                           "ow (xbl)": "Overwatch (XBL)",
-                           "overwatch (pc)": "Overwatch (PC)",
-                           "overwatch (psn)": "Overwatch (PSN)",
-                           "overwatch (xbl)": "Overwatch (XBL)",
-                           "pubg": "PUBG",
-                           "r6s (pc)": "Rainbow Six Siege (PC)",
-                           "rainbow six siege (pc)": "Rainbow Six Siege (PC)",
-                           "movie night": "Movie Night",
-                           "stream alerts": "Stream Alerts"}
+        with open(file_path, 'r') as file:
+            roles_dict = json.loads(file.read())
 
         # Check for Allowed Role
-        if group_name.lower() not in allowed_roles:
+        if group_name.lower() not in roles_dict:
             await self.bot.say("{0.mention}, you must select one of the public groups to join.".format(user))
             return
 
         # Try to Grant the Role
         try:
-            role = discord.utils.get(server.roles, name=role_dictionary[group_name.lower()])
+            role = discord.utils.get(server.roles, name=roles_dict[group_name.lower()])
             await self.bot.add_roles(user, role)
         except Exception as e:
             await self.bot.say(
@@ -123,7 +73,7 @@ class Roles:
 
         # Success Message
         await self.bot.say(
-            "{0.mention}, you have been given the role **{1}**.".format(user, role_dictionary[group_name.lower()]))
+            "{0.mention}, you have been given the role **{1}**.".format(user, roles_dict[group_name.lower()]))
 
     # COMMAND: !leave
     @commands.command(name='leave', pass_context=True, aliases=['iamnot'])
@@ -133,94 +83,18 @@ class Roles:
 
         # Get User and Server
         user = ctx.message.author
-        server = ctx.message.server  # Define Allowed Groups
-        allowed_roles = ['queer',
-                         'not a man',
-                         'mental health',
-                         'poc',
-                         'person of color',
-                         'relationships',
-                         'they/them',
-                         'they',
-                         'them',
-                         'she/her',
-                         'she',
-                         'her',
-                         'he/him',
-                         'he',
-                         'him',
-                         'africa',
-                         'asia',
-                         'eu',
-                         'europe',
-                         'na',
-                         'north america',
-                         'oce',
-                         'oceania',
-                         'sa',
-                         'south america',
-                         'destiny (pc)',
-                         'destiny (psn)',
-                         'destiny (xbl)',
-                         'lol',
-                         'league of legends',
-                         'ow (pc)',
-                         'ow (psn)',
-                         'ow (xbl)',
-                         'overwatch (pc)',
-                         'overwatch (psn)',
-                         'overwatch (xbl)',
-                         'pubg',
-                         'r6s (pc)',
-                         'rainbow six siege (pc)',
-                         'movie night',
-                         'stream alerts']
+        server = ctx.message.server
 
-        # ROLE MATCH DICTIONARY
-        role_dictionary = {"queer": "Queer",
-                           "not a man": "Not a Man",
-                           "mental health": "Mental Health",
-                           "poc": "Person of Color",
-                           "person of color": "Person of Color",
-                           "relationships": "Relationships",
-                           "they/them": "They/Them",
-                           "they": "They/Them",
-                           "them": "They/Them",
-                           "she/her": "She/Her",
-                           "she": "She/Her",
-                           "her": "She/Her",
-                           "he/him": "He/Him",
-                           "he": "He/Him",
-                           "him": "He/Him",
-                           "africa": "Africa",
-                           "asia": "Asia",
-                           "eu": "Europe",
-                           "europe": "Europe",
-                           "na": "North America",
-                           "north america": "North America",
-                           "oce": "Oceania",
-                           "oceania": "Oceania",
-                           "sa": "South America",
-                           "south america": "South America",
-                            "destiny (pc)": "Destiny (PC)",
-                           "destiny (psn)": "Destiny (PSN)",
-                           "destiny (xbl)": "Destiny (XBL)",
-                           "lol": "League of Legends",
-                           "league of legends": "League of Legends",
-                           "ow (pc)": "Overwatch (PC)",
-                           "ow (psn)": "Overwatch (PSN)",
-                           "ow (xbl)": "Overwatch (XBL)",
-                           "overwatch (pc)": "Overwatch (PC)",
-                           "overwatch (psn)": "Overwatch (PSN)",
-                           "overwatch (xbl)": "Overwatch (XBL)",
-                           "pubg": "PUBG",
-                           "r6s (pc)": "Rainbow Six Siege (PC)",
-                           "rainbow six siege (pc)": "Rainbow Six Siege (PC)",
-                           "movie night": "Movie Night",
-                           "stream alerts": "Stream Alerts"}
+        # Get the JSON file thing.
+        file_path = os.path.normpath("{0}/roles.json".format(
+            os.path.dirname(os.path.realpath(__file__))
+        ))
+
+        with open(file_path, 'r') as file:
+            roles_dict = json.loads(file.read())
 
         # Check for Allowed Role
-        if group_name.lower() not in allowed_roles:
+        if group_name.lower() not in roles_dict:
             if "mod" in group_name.lower():
                 await self.bot.say("{0.mention}, if you try to make yourself a mod too much we might have to "
                                    "send you to the gulags.".format(user))
@@ -231,7 +105,7 @@ class Roles:
 
         # Try to Grant the Role
         try:
-            role = discord.utils.get(server.roles, name=role_dictionary[group_name.lower()])
+            role = discord.utils.get(server.roles, name=roles_dict[group_name.lower()])
             await self.bot.remove_roles(user, role)
         except Exception as e:
             await self.bot.say(
@@ -240,7 +114,7 @@ class Roles:
 
         # Success Message
         await self.bot.say(
-            "{0.mention}, your **{1}** role has been removed.".format(user, role_dictionary[group_name.lower()]))
+            "{0.mention}, your **{1}** role has been removed.".format(user, roles_dict[group_name.lower()]))
 
 
 def setup(bot):
