@@ -1,36 +1,64 @@
-import json
+import sqlite3
 import os
 
+DEFAULT_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'info.db')
 
-# Get the JSON configuration file.
-file_path = os.path.normpath("{0}/config.json".format(
-    os.path.dirname(os.path.realpath(__file__))
-))
 
-# Read the config and setup the settings dictionary
-with open(file_path, 'r') as file:
-    config = json.loads(file.read())
+# Connect to SQLite DB
+def db_connect(db_path=DEFAULT_PATH):
+    con = sqlite3.connect(db_path)
+    return con
+
+
+# Setup Connection and Cursor for Most Stuff
+conn = db_connect()
+conn.row_factory = sqlite3.Row
+cur = conn.cursor()
+
+# Get Config Stuff Part 1
+config = cur.execute("SELECT * FROM config").fetchone()
+channels = cur.execute("SELECT * FROM channels").fetchone()
+roles = cur.execute("SELECT * FROM roles").fetchone()
+twitter_config = cur.execute("SELECT * FROM twitter_config").fetchone()
+counting_config = cur.execute("SELECT * FROM counting").fetchone()
+
+# Cleanup
+cur.close()
+conn.close()
+
+# Setup Connection and Cursor for Pin Channels
+conn = db_connect()
+conn.row_factory = lambda cursor, row: row[0]
+cur = conn.cursor()
+
+# Get Pin Channels
+pin_channels = cur.execute("SELECT channel_id FROM pin_channels").fetchall()
+twitter_watching = cur.execute("SELECT * FROM twitter_watching").fetchall()
+
+# Cleanup
+cur.close()
+conn.close()
 
 # Main Settings
-BOT_TOKEN = config["main"]["bot_token"]
+BOT_TOKEN = config["bot_token"]
 
 # Welcome Message Channels
-CHANNEL_ID_LOBBY = config["welcome"]["lobby"]
-CHANNEL_ID_INFO = config["welcome"]["info"]
-CHANNEL_ID_UPDATES = config["welcome"]["updates"]
+CHANNEL_ID_LOBBY = channels["lobby"]
+CHANNEL_ID_INFO = channels["info"]
+CHANNEL_ID_UPDATES = channels["updates"]
 
 # Counting
-CHANNEL_ID_COUNTING = config["counting"]["channel_id"]
-CURRENT_COUNT = config["counting"]["current"]
-RECORD_COUNT = config["counting"]["record"]
+CHANNEL_ID_COUNTING = channels["counting"]
+CURRENT_COUNT = counting_config["current"]
+RECORD_COUNT = counting_config["record"]
 
 # Twitter Settings
-CONSUMER_KEY = config["twitter"]["consumer_key"]
-CONSUMER_SECRET = config["twitter"]["consumer_secret"]
-OAUTH_TOKEN = config["twitter"]["auth"]["access_token"]
-OAUTH_TOKEN_SECRET = config["twitter"]["auth"]["access_token_secret"]
-TWEET_WATCHING = config["twitter"]["watching"]
-TWEET_CHANNEL_ID = config["twitter"]["tweet_channel_id"]
+CONSUMER_KEY = twitter_config["consumer_key"]
+CONSUMER_SECRET = twitter_config["consumer_secret"]
+OAUTH_TOKEN = twitter_config["oauth_token"]
+OAUTH_TOKEN_SECRET = twitter_config["oauth_token_secret"]
+TWEET_WATCHING = twitter_watching
+CHANNEL_ID_TWITTER = channels["twitter"]
 
 # Allowed Pin Channels
-ALLOWED_PIN_CHANNELS = config["channel_pin"]["channel_ids"]
+ALLOWED_PIN_CHANNELS = pin_channels
