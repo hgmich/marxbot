@@ -9,7 +9,7 @@ async def on_clip(reaction, user, bot):
         return
 
     # Set the Clipboard Channel
-    clipboard = bot.get_channel(settings.CHANNEL_ID_PINBOARD)
+    clipboard = bot.get_channel(settings.CHANNEL_ID_CLIPBOARD)
 
     # have to add a check here to make sure its not the pin board itself
     if reaction.message.channel == clipboard:
@@ -85,9 +85,13 @@ async def on_clip(reaction, user, bot):
 
 
 async def remove_clip(reaction, bot):
+
+    # Set the Clipboard Channel
+    clipboard = bot.get_channel(settings.CHANNEL_ID_CLIPBOARD)
+
     try:
         for message in bot.messages:
-            if message.channel.name.lower() == "clipboard":
+            if message.channel == clipboard:
                 if message == reaction.message:
                     try:
                         await bot.delete_message(message)
