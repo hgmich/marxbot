@@ -62,3 +62,21 @@ CHANNEL_ID_TWITTER = channels["twitter"]
 
 # Allowed Pin Channels
 ALLOWED_PIN_CHANNELS = pin_channels
+
+
+# Update Counting
+def update_counting(new_count=CURRENT_COUNT):
+    con = db_connect()
+    c = con.cursor()
+
+    if new_count > RECORD_COUNT:
+        sql = "UPDATE counting SET current = " + str(new_count) + ", record = " + str(new_count) + " WHERE id = 1"
+    else:
+        sql = "UPDATE counting SET current = " + str(new_count) + " WHERE id = 1"
+
+    try:
+        c.execute(sql)
+        con.commit()
+        return True
+    except:
+        return False
