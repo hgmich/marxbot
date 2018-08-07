@@ -32,7 +32,7 @@ class TweetWatch:
 
     def __init__(self, bot):
         self.bot = bot
-        self.channel = self.bot.get_channel(settings.TWEET_CHANNEL_ID)
+        self.channel = self.bot.get_channel(settings.CHANNEL_ID_TWITTER)
 
         self.reload_config()
 
@@ -192,7 +192,7 @@ no longer want to authorize me with Twitter. You can also say 'cancel' at any ti
                                              icon_url="https://abs.twimg.com/icons/apple-touch-icon-192x192.png",
                                              )
 
-                            await self.bot.send_message(self.bot.get_channel(settings.TWEET_CHANNEL_ID),
+                            await self.bot.send_message(self.bot.get_channel(settings.CHANNEL_ID_TWITTER),
                                                         content='https://twitter.com/{user}/status/{tweet_id}'
                                                         .format(user=data['user']['screen_name'], tweet_id=data['id_str']))
                         except Exception as e:
