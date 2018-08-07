@@ -46,6 +46,7 @@ BOT_TOKEN = config["bot_token"]
 CHANNEL_ID_LOBBY = channels["lobby"]
 CHANNEL_ID_INFO = channels["info"]
 CHANNEL_ID_UPDATES = channels["updates"]
+CHANNEL_ID_PINBOARD = channels["pin_board"]
 
 # Counting
 CHANNEL_ID_COUNTING = channels["counting"]

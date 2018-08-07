@@ -1,30 +1,34 @@
 import discord
 from discord.ext import commands
 import logging
+import asyncio
 import settings
+from emojis import *
+from clipboard import on_clip,remove_clip
+from bookmark import on_bookmark
+from pins import on_pin
+
 
 # BOT LOGGING
-
 logger = logging.getLogger('discord')
 logger.setLevel(logging.WARNING)
 handler = logging.FileHandler(filename='marxbot.log', encoding='utf-8', mode='w')
 handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
 logger.addHandler(handler)
 
+# Bot Description
 description = '''Famed Economic Theorist and Supporter of the Working Peoples' Servers.'''
 
-# this specifies what extensions to load when the bot starts up
+# This specifies what extensions to load when the bot starts up
 startup_extensions = ["general", "roles", "music", "wiki", "staff", "tweet_watch"]
 
+# Setup Bot
 bot = commands.Bot(command_prefix='!', description="Karl Marxbot.")
 
 
 @bot.event
 async def on_ready():
-    print('Logged in as')
-    print(bot.user.name)
-    print(bot.user.id)
-    print('------')
+    print('..... Marxbot has started .....')
     await bot.change_presence(game=discord.Game(name='Communism Simulator'))
 
 
@@ -85,20 +89,12 @@ async def on_message(message):
 # Auto-Pin on Pushpin Reactions in Select Channels
 @bot.event
 async def on_reaction_add(reaction, user):
-
-    # Define Allowed Channels
-    channels = []
-    for channel_id in settings.ALLOWED_PIN_CHANNELS:
-        channels.append(bot.get_channel(channel_id))
-
-    # Check if the reaction is pushpin
-    if str(reaction.emoji) == '\N{PUSHPIN}' and reaction.count >= 4 and not reaction.message.pinned and reaction.message.channel in channels:
-        current_pinned = await bot.pins_from(reaction.message.channel)
-        if len(current_pinned) < 50:
-            await bot.pin_message(reaction.message)
-        else:
-            await bot.send_message(reaction.message.channel, "I cannot pin the message. We have reached the maximum "
-                                                             "number of pins comrades!")
+    if reaction.emoji == bookmark_emoji:
+        await on_bookmark(reaction, user, bot)
+    elif reaction.emoji == paperclip_emoji:
+        await on_clip(reaction, user, bot)
+    elif reaction.emoji == pushpin_emoji
+        await on_pin(reaction, bot)
 
 
 if __name__ == "__main__":
