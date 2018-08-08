@@ -15,6 +15,7 @@ class General:
     @commands.command(pass_context=True)
     async def hello(self, ctx):
         """Say hello to Karl Marxbot. He is very friendly."""
+
         # we do not want the bot to reply to itself
         if ctx.message.author == self.bot.user:
             return

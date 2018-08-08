@@ -1,9 +1,9 @@
 import discord
 from discord.ext import commands
 import logging
-import settings
-from emojis import *
-from clipboard import on_clip,remove_clip
+from .utils import config
+from .utils.emojis import *
+from clipboard import on_clip
 from bookmark import on_bookmark
 from pins import on_pin
 
@@ -35,12 +35,12 @@ async def on_ready():
 @bot.event
 async def on_member_join(member):
     # Define Channels
-    channel_lobby = bot.get_channel(settings.CHANNEL_ID_LOBBY)
-    channel_info = bot.get_channel(settings.CHANNEL_ID_INFO)
-    channel_updates = bot.get_channel(settings.CHANNEL_ID_UPDATES)
+    channel_lobby = bot.get_channel(config.CHANNEL_ID_LOBBY)
+    channel_info = bot.get_channel(config.CHANNEL_ID_INFO)
+    channel_updates = bot.get_channel(config.CHANNEL_ID_UPDATES)
 
     # Get Probie Role
-    probie_role = discord.utils.get(member.server.roles, id=settings.ROLE_ID_DEFAULT)
+    probie_role = discord.utils.get(member.server.roles, id=config.ROLE_ID_DEFAULT)
     await bot.add_roles(member, probie_role)
 
     wmsg = "Hello {0.mention}, and welcome to LeftDisc, a leftist Discord server. We thank you for " \
@@ -64,21 +64,21 @@ async def on_member_join(member):
 async def on_message(message):
 
     # Check for Counting Message & Prevent Bot from Checking Own Messages for Endless Loop
-    if message.channel.id == settings.CHANNEL_ID_COUNTING and message.user != bot.user:
+    if message.channel.id == config.CHANNEL_ID_COUNTING and message.user != bot.user:
 
         new_number = message.content
 
         # Is the message strictly a number?
         if new_number.isdigit():
             # Is it the next number?
-            if int(new_number) == (settings.CURRENT_COUNT + 1):
+            if int(new_number) == (config.CURRENT_COUNT + 1):
                 # Increase the Count
-                settings.CURRENT_COUNT = (new_number + 1)
+                config.CURRENT_COUNT = (new_number + 1)
             else:
-                settings.CURRENT_COUNT = 0
+                config.CURRENT_COUNT = 0
                 await bot.send_message(message.channel, "**ALERT**: Sorry, that number is not correct! Start over at 1.")
         else:
-            settings.CURRENT_COUNT = 0
+            config.CURRENT_COUNT = 0
             await bot.send_message(message.channel, "**ALERT**: Sorry, numbers only! Start over at 1.")
 
     # Process the rest of the Commands
@@ -114,4 +114,4 @@ if __name__ == "__main__":
             if extension == 'tweet_watch':
                 raise e
 
-    bot.run(settings.BOT_TOKEN)
+    bot.run(config.BOT_TOKEN)

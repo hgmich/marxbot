@@ -1,7 +1,7 @@
 # From MitchWeaver DisKvlt-Bot
 from datetime import datetime
 import requests
-import settings
+from .utils import config
 
 
 async def on_clip(reaction, user, bot):
@@ -16,7 +16,7 @@ async def on_clip(reaction, user, bot):
         return
 
     # Set the Clipboard Channel
-    clipboard = bot.get_channel(settings.CHANNEL_ID_CLIPBOARD)
+    clipboard = bot.get_channel(config.CHANNEL_ID_CLIPBOARD)
 
     # have to add a check here to make sure its not the pin board itself
     if reaction.message.channel == clipboard:
@@ -94,7 +94,7 @@ async def on_clip(reaction, user, bot):
 async def remove_clip(reaction, bot):
 
     # Set the Clipboard Channel
-    clipboard = bot.get_channel(settings.CHANNEL_ID_CLIPBOARD)
+    clipboard = bot.get_channel(config.CHANNEL_ID_CLIPBOARD)
 
     try:
         for message in bot.messages:

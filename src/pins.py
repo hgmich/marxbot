@@ -1,4 +1,4 @@
-import settings
+from .utils import config
 
 
 # When Someone Reacts with a Pushpin Emote
@@ -11,7 +11,7 @@ async def on_pin(reaction, bot):
 
     # Define Allowed Channels
     channels = []
-    for channel_id in settings.ALLOWED_PIN_CHANNELS:
+    for channel_id in config.ALLOWED_PIN_CHANNELS:
         channels.append(bot.get_channel(channel_id))
 
     # Check for Allowed Channels
