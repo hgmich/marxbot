@@ -3,6 +3,7 @@ import settings
 
 # When Someone Reacts with a Pushpin Emote
 async def on_pin(reaction, bot):
+    print("Reaction was pin!")
 
     # Check for Needed Reacts and If Message is Pinned Already
     if reaction.count < 4 and not reaction.message.pinned:

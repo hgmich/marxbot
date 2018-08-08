@@ -1,7 +1,6 @@
 import discord
 from discord.ext import commands
 import logging
-import asyncio
 import settings
 from emojis import *
 from clipboard import on_clip,remove_clip
@@ -41,7 +40,7 @@ async def on_member_join(member):
     channel_updates = bot.get_channel(settings.CHANNEL_ID_UPDATES)
 
     # Get Probie Role
-    probie_role = discord.utils.get(member.server.roles, name='Psyops')
+    probie_role = discord.utils.get(member.server.roles, id=settings.ROLE_ID_DEFAULT)
     await bot.add_roles(member, probie_role)
 
     wmsg = "Hello {0.mention}, and welcome to LeftDisc, a leftist Discord server. We thank you for " \
@@ -64,8 +63,8 @@ async def on_member_join(member):
 @bot.event
 async def on_message(message):
 
-    # Check for Counting Message
-    if message.channel.id == settings.CHANNEL_ID_COUNTING:
+    # Check for Counting Message & Prevent Bot from Checking Own Messages for Endless Loop
+    if message.channel.id == settings.CHANNEL_ID_COUNTING and message.user != bot.user:
 
         new_number = message.content
 
@@ -86,15 +85,23 @@ async def on_message(message):
     await bot.process_commands(message)
 
 
-# Auto-Pin on Pushpin Reactions in Select Channels
+# Handle Reacts (Pin, Clip, Bookmark
 @bot.event
 async def on_reaction_add(reaction, user):
     if reaction.emoji == bookmark_emoji:
         await on_bookmark(reaction, user, bot)
     elif reaction.emoji == paperclip_emoji:
         await on_clip(reaction, user, bot)
-    elif reaction.emoji == pushpin_emoji
+    elif reaction.emoji == pushpin_emoji:
         await on_pin(reaction, bot)
+
+
+# Remove Reaction
+# @bot.event
+# async def on_reaction_remove(reaction, user):
+#    # delete message in #pin_board on removal of pushpin emoji
+#    if reaction.emoji == paperclip_emoji:
+#        await remove_clip(reaction.message, bot)
 
 
 if __name__ == "__main__":

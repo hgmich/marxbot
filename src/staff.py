@@ -1,5 +1,6 @@
 import discord
 from discord.ext import commands
+from .utils import checks
 import datetime
 
 
@@ -14,7 +15,7 @@ class Staff:
     # Load Extension
 
     @commands.command(pass_context=True)
-    @commands.has_role("admins!!!")
+    @checks.is_admin()
     async def load(self, ctx, extension_name: str):
         """Loads an extension."""
 
@@ -27,7 +28,7 @@ class Staff:
 
     # Unload Extension
     @commands.command(pass_context=True)
-    @commands.has_role("admins!!!")
+    @checks.is_admin()
     async def unload(self, ctx, extension_name: str):
         """Unloads an extension."""
 
@@ -36,7 +37,7 @@ class Staff:
 
     # COMMAND: !setplaying
     @commands.command()
-    @commands.has_any_role("admins!!!", "mods? mods! mods!?")
+    @checks.is_staff()
     async def setplaying(self, *, game_name: str):
         """Sets Karl's currently playing game."""
 
@@ -45,7 +46,7 @@ class Staff:
 
     # COMMAND: !comrade
     @commands.command(pass_context=True)
-    @commands.has_any_role("admins!!!", "mods? mods! mods!?")
+    @checks.is_staff()
     async def comrade(self, ctx, user: discord.Member):
         """Promotes a Psyop to a Comrade granting full server access."""
 
@@ -80,7 +81,7 @@ class Staff:
 
     # COMMAND: !psyops
     @commands.command(pass_context=True)
-    @commands.has_any_role("admins!!!", "mods? mods! mods!?")
+    @checks.is_staff()
     async def psyops(self, ctx, page: int = 1):
         """Lists the current Psyops/probationary users and their Join Date. 20 users per page."""
 
@@ -124,7 +125,7 @@ class Staff:
 
     # COMMAND !cleanup
     @commands.command(pass_context=True)
-    @commands.has_any_role("admins!!!", "mods? mods! mods!?")
+    @checks.is_admin()
     async def cleanup(self, ctx, certain: str = "n"):
         """Clears members in the Psyops group who have been in the server for more than 24 hours."""
 

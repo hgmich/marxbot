@@ -48,6 +48,12 @@ CHANNEL_ID_INFO = channels["info"]
 CHANNEL_ID_UPDATES = channels["updates"]
 CHANNEL_ID_CLIPBOARD = channels["clipboard"]
 
+# ROLE IDS
+ROLE_ID_ADMIN = roles["admin"]
+ROLE_ID_MOD = roles["mod"]
+ROLE_ID_MEMBER = roles["member"]
+ROLE_ID_DEFAULT = roles["default"]
+
 # Counting
 CHANNEL_ID_COUNTING = channels["counting"]
 CURRENT_COUNT = counting_config["current"]
