@@ -1,6 +1,7 @@
 import discord
 from discord.ext import commands
-from .utils import checks
+from utils import checks
+from utils import config
 import datetime
 
 
@@ -155,6 +156,19 @@ class Staff:
             return
 
         await self.bot.say("**Total Purged Users**: " + str(total))
+
+    # COMMAND !updatecounting
+    @commands.command(pass_context=True)
+    @checks.is_staff()
+    async def updatecounting(self, ctx):
+        """Force updates counting."""
+
+        updated = config.update_counting()
+
+        if updated:
+            await self.bot.say("Counting stats have been updated.")
+        else:
+            await self.bot.say("**ERROR**: Counting stats could not be updated.")
 
 
 def setup(bot):

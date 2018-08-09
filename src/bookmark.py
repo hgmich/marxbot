@@ -4,7 +4,6 @@ import requests
 
 
 async def on_bookmark(reaction, user, bot):
-    print("Reaction was bookmark!")
 
     # date stamp
     date = datetime.now().strftime('%a %d %b %y')

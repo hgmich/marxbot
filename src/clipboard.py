@@ -1,15 +1,14 @@
 # From MitchWeaver DisKvlt-Bot
 from datetime import datetime
 import requests
-from .utils import config
+from utils import config
 
 
 async def on_clip(reaction, user, bot):
-    print("Reaction was paperclip!")
 
     # Check for Needed Reacts
-    # if reaction.count < 5:
-    #    return
+    if reaction.count < 5:
+        return
 
     # Check for any message.
     if reaction.message.clean_content is None:

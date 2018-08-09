@@ -4,7 +4,7 @@ import peony
 import peony.oauth_dance
 from peony.exceptions import Unauthorized
 from datetime import datetime
-from .utils import config
+from utils import config
 import json
 import os
 

@@ -1,5 +1,6 @@
 import discord
 from discord.ext import commands
+from utils import checks
 import random
 
 
@@ -13,6 +14,7 @@ class General:
 
     # COMMAND: !hello
     @commands.command(pass_context=True)
+    @checks.is_member()
     async def hello(self, ctx):
         """Say hello to Karl Marxbot. He is very friendly."""
 
@@ -25,6 +27,7 @@ class General:
         
     # COMMAND: !markdown
     @commands.command()
+    @checks.is_member()
     async def markdown(self):
         """Get the lowdown about Discord markdown."""
         
@@ -35,6 +38,7 @@ class General:
 
     # COMMAND: !8ball
     @commands.command(name='8ball', pass_context=True)
+    @checks.is_member()
     async def eightball(self, ctx, *, question: str):
         """Rolls a magic 8-ball to answer any question you have."""
 
@@ -78,6 +82,7 @@ class General:
 
     # COMMAND: !roll
     @commands.command()
+    @checks.is_member()
     async def roll(self, dice: str):
         """Rolls a dice in NdN format."""
         try:
@@ -91,6 +96,7 @@ class General:
 
     # COMMAND: !serverinfo
     @commands.command(pass_context=True)
+    @checks.is_member()
     async def serverinfo(self, ctx):
         """Displays Information about the Server."""
 
@@ -142,7 +148,7 @@ class General:
 
     # COMMAND: !invite
     @commands.command(pass_context=True)
-    @commands.has_role("Comrades")
+    @checks.is_member()
     async def invite(self, ctx, duration: int = 1800, maxusers: int = 0):
         """Provides an invite link to the LEFTDISC. Duration is in seconds.
         Max users is the number of times a link can be used."""

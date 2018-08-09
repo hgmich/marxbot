@@ -1,8 +1,9 @@
 import discord
 from discord.ext import commands
 import logging
-from .utils import config
-from .utils.emojis import *
+import asyncio
+from utils import config
+from utils.emojis import *
 from clipboard import on_clip
 from bookmark import on_bookmark
 from pins import on_pin
@@ -28,7 +29,7 @@ bot = commands.Bot(command_prefix='!', description="Karl Marxbot.")
 @bot.event
 async def on_ready():
     print('..... Marxbot has started .....')
-    await bot.change_presence(game=discord.Game(name='Communism Simulator'))
+    await bot.change_presence(game=discord.Game(name='Communism Simulator BETA'))
 
 
 # Welcome Message
@@ -64,7 +65,7 @@ async def on_member_join(member):
 async def on_message(message):
 
     # Check for Counting Message & Prevent Bot from Checking Own Messages for Endless Loop
-    if message.channel.id == config.CHANNEL_ID_COUNTING and message.user != bot.user:
+    if message.channel.id == config.CHANNEL_ID_COUNTING and message.author != bot.user:
 
         new_number = message.content
 
@@ -104,6 +105,20 @@ async def on_reaction_add(reaction, user):
 #        await remove_clip(reaction.message, bot)
 
 
+async def save_count():
+    await bot.wait_until_ready()
+    while not bot.is_closed:
+
+        updated = config.update_counting()
+
+        if updated:
+            print("Counting stats have been updated.")
+        else:
+            print("ERROR: Counting stats could not be updated.")
+
+        await asyncio.sleep(600)  # task runs every 600 seconds
+
+
 if __name__ == "__main__":
     for extension in startup_extensions:
         try:
@@ -114,4 +129,5 @@ if __name__ == "__main__":
             if extension == 'tweet_watch':
                 raise e
 
+    bot.loop.create_task(save_count())
     bot.run(config.BOT_TOKEN)
