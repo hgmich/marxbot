@@ -87,3 +87,63 @@ def update_counting(new_count=CURRENT_COUNT):
         return True
     except:
         return False
+
+
+# Check for Clipboard
+def on_clipboard(message_id: str):
+    con = db_connect()
+    c = con.cursor()
+
+    sql = "SELECT COUNT(*) FROM clipboard WHERE message_id = ?"
+    c.execute(sql, (message_id,))
+    data = c.fetchone()[0]
+
+    c.close()
+    con.close()
+
+    return data != 0
+
+
+# Add message to clipboard
+def add_clipboard(message_id: str, clipped_id: str):
+    con = db_connect()
+    c = con.cursor()
+
+    sql = "INSERT INTO clipboard (message_id, clipped_id, total_clips) VALUES (?, ?, 5)"
+
+    try:
+        c.execute(sql, (message_id, clipped_id))
+        con.commit()
+        return True
+    except:
+        return False
+
+
+# Increase Clip Count
+def increase_clip(message_id: str):
+    con = db_connect()
+    c = con.cursor()
+
+    sql = "UPDATE clipboard SET total_clips = (total_clips + 1) WHERE message_id = ?"
+
+    try:
+        c.execute(sql, (message_id,))
+        con.commit()
+        return True
+    except:
+        return False
+
+
+# Decrease Clip Count
+def decrease_clip(message_id: str):
+    con = db_connect()
+    c = con.cursor()
+
+    sql = "UPDATE clipboard SET total_clips = (total_clips - 1) WHERE message_id = ?"
+
+    try:
+        c.execute(sql, (message_id,))
+        con.commit()
+        return True
+    except:
+        return False

@@ -168,4 +168,4 @@ fabric.properties
 
 # Config Files
 roles.json
-info.db
+src/utils/info.db
