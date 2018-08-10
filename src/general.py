@@ -1,6 +1,7 @@
 import discord
 from discord.ext import commands
 from utils import checks
+from utils import config
 import random
 
 
@@ -24,16 +25,16 @@ class General:
         else:
             msg = "Hello comrade {0.message.author.mention}, I am Karl Marxbot.".format(ctx)
             await self.bot.send_message(ctx.message.channel, msg)
-        
+
     # COMMAND: !markdown
     @commands.command()
     @checks.is_member()
     async def markdown(self):
         """Get the lowdown about Discord markdown."""
-        
+
         msg = "Read up about Discord's markdown here comrade: " \
               "https://support.discordapp.com/hc/en-us/articles/210298617-Markdown-Text-101-Chat-Formatting-Bold-Italic-Underline-"
-        
+
         await self.bot.say(msg)
 
     # COMMAND: !8ball
@@ -168,6 +169,40 @@ class General:
 
         # Send Message with Invite Link
         await self.bot.say('Your newly generated invite link is: {0.url}'.format(new_invite))
+
+    # COMMAND: !dontclip
+    @commands.command(pass_context=True)
+    @checks.is_member()
+    async def dontclip(self, ctx):
+        """Allows you to add yourself to the "no clip" list to prevent your messages from being on the clipboard."""
+
+        member_id = ctx.message.author.id
+
+        result = config.add_noclip_member(member_id)
+
+        if result:
+            await self.bot.say("You were successfully added to the **No Clip** list.")
+        else:
+            await self.bot.say("**ERROR**: There was an error adding you to the **No Clip** list.")
+
+    # COMMAND: !doclip
+    @commands.command(pass_context=True)
+    @checks.is_member()
+    async def doclip(self, ctx):
+        """Allows you to remove yourself to the "no clip" list to allow your messages from being on the clipboard."""
+
+        member_id = ctx.message.author.id
+
+        if member_id not in config.get_noclip_members():
+            await self.bot.say("**ERROR**: You are not on the **No Clip** list.")
+            return
+
+        result = config.remove_noclip_member(member_id)
+
+        if result:
+            await self.bot.say("You were successfully removed from the **No Clip** list.")
+        else:
+            await self.bot.say("**ERROR**: There was an error removing you from the **No Clip** list.")
 
 
 def setup(bot):

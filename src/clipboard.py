@@ -1,4 +1,3 @@
-# From MitchWeaver DisKvlt-Bot
 import discord
 from datetime import datetime
 from utils import config
@@ -13,6 +12,11 @@ async def on_clip(reaction, user, bot):
     # The message
     msg = reaction.message
 
+    # Check for Message Already In
+    if config.on_clipboard(msg.id):
+        config.increase_clip(msg.id)
+        return
+
     # Set the Clipboard Channel
     clipboard = bot.get_channel(config.CHANNEL_ID_CLIPBOARD)
 
@@ -20,11 +24,12 @@ async def on_clip(reaction, user, bot):
     if msg.channel == clipboard:
         return
 
-    # date stamp
-    date = datetime.now().strftime('%a %d %b %y')
+    # Check if Message Author is in "No Clip" List
+    if msg.author in config.get_noclip_members():
+        return
 
     # Setup Embed
-    embed = discord.Embed(colour=discord.Colour(0xca0003), description=msg.content, timestamp=date)
+    embed = discord.Embed(colour=discord.Colour(0xca0003), description=msg.content, timestamp=datetime.now())
 
     if msg.embeds:
         data = msg.embeds[0]
@@ -33,31 +38,24 @@ async def on_clip(reaction, user, bot):
 
     if msg.attachments:
         file = msg.attachments[0]
-        if file.url.lower().endswith(('png', 'jpeg', 'jpg', 'gif', 'webp')):
-            embed.set_image(url=file.url)
+        if file['url'].lower().endswith(('png', 'jpeg', 'jpg', 'gif', 'webp')):
+            embed.set_image(url=file['url'])
         else:
-            embed.add_field(name='Attachment', value=f'[{file.filename}]({file.url})', inline=False)
+            embed.add_field(name='Attachment', value='[' + file['url'] + '](' + file['filename'] + ')', inline=False)
 
-    embed.set_author(name=msg.author.display_name, icon_url=msg.author.avatar_url_as(format='png'))
+    embed.set_author(name=msg.author.display_name, icon_url=msg.author.avatar_url)
 
-    clip_msg = await bot.say(content="📋 from {0.mention}".format(msg.channel), embed=embed)
+    clip_msg = await bot.send_message(clipboard, content="ðŸ“‹ from {0.mention}".format(msg.channel), embed=embed)
 
     config.add_clipboard(msg.id, clip_msg.id)
 
 
 async def remove_clip(reaction, bot):
 
-    # Set the Clipboard Channel
-    clipboard = bot.get_channel(config.CHANNEL_ID_CLIPBOARD)
+    # The message
+    msg = reaction.message
 
-    try:
-        for message in bot.messages:
-            if message.channel == clipboard:
-                if message == reaction.message:
-                    try:
-                        await bot.delete_message(message)
-                    except:
-                        pass
-                    return
-    except:
-        pass
+    # Check for Message Already In
+    if config.on_clipboard(msg.id):
+        config.decrease_clip(msg.id)
+        return

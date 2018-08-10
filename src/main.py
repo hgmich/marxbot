@@ -74,7 +74,7 @@ async def on_message(message):
             # Is it the next number?
             if int(new_number) == (config.CURRENT_COUNT + 1):
                 # Increase the Count
-                config.CURRENT_COUNT = (new_number + 1)
+                config.CURRENT_COUNT = (config.CURRENT_COUNT + 1)
             else:
                 config.CURRENT_COUNT = 0
                 await bot.send_message(message.channel, "**ALERT**: Sorry, that number is not correct! Start over at 1.")

@@ -1,49 +1,27 @@
-# From MitchWeaver DisKvlt-Bot
+import discord
 from datetime import datetime
-import requests
 
 
 async def on_bookmark(reaction, user, bot):
 
-    # date stamp
-    date = datetime.now().strftime('%a %d %b %y')
+    # The message
+    msg = reaction.message
 
-    # if has attachments, it is an uploaded picture
-    try:
-        json = str(reaction.message.attachments[0]).split("'")
+    # Setup Embed
+    embed = discord.Embed(colour=discord.Colour(0xca0003), description=msg.content, timestamp=datetime.now())
 
-        file = open('/tmp/image2.png', 'wb')
-        file.write(requests.get(json[5]).content)
-        file.close()
+    if msg.embeds:
+        data = msg.embeds[0]
+        if data.type == 'image':
+            embed.set_image(url=data.url)
 
-        # if the user also posted text with this message, post it
-        # for some reason discord uploads have some weird 1 character long
-        # text. Not sure what it is, it's not a \n or " "
-        text = "From " + reaction.message.author.mention \
-               + "  ~  " + date + reaction.message.clean_content
-        if len(reaction.message.clean_content) > 1:
-            text = "From " + reaction.message.author.mention + "  ~  " \
-                   + date + "\n" \
-                   + '```' + reaction.message.clean_content + '```'
+    if msg.attachments:
+        file = msg.attachments[0]
+        if file['url'].lower().endswith(('png', 'jpeg', 'jpg', 'gif', 'webp')):
+            embed.set_image(url=file['url'])
+        else:
+            embed.add_field(name='Attachment', value='[' + file['url'] + '](' + file['filename'] + ')', inline=False)
 
-        try:
-            await bot.send_file(user, "/tmp/image2.png", content=text)
-        except:
-            pass
+    embed.set_author(name=msg.author.display_name, icon_url=msg.author.avatar_url)
 
-    except:
-        try:
-            if "http" not in reaction.message.clean_content.lower() \
-                    and "www" not in reaction.message.clean_content.lower():
-                text = "From " + reaction.message.author.mention + "  ~  " \
-                       + date + "\n" + \
-                       '```' + reaction.message.clean_content + '```'
-            else:
-                text = "From " + reaction.message.author.mention + "  ~  " \
-                       + date + "\n" \
-                       + reaction.message.clean_content
-
-            await bot.send_message(user, text)
-
-        except:
-            pass
+    await bot.send_message(user, content="ðŸ”– from {0.mention}".format(msg.channel), embed=embed)

@@ -72,14 +72,14 @@ ALLOWED_PIN_CHANNELS = pin_channels
 
 
 # Update Counting
-def update_counting(new_count=CURRENT_COUNT):
+def update_counting():
     con = db_connect()
     c = con.cursor()
 
-    if new_count > RECORD_COUNT:
-        sql = "UPDATE counting SET current = " + str(new_count) + ", record = " + str(new_count) + " WHERE id = 1"
+    if CURRENT_COUNT > RECORD_COUNT:
+        sql = "UPDATE counting SET current = " + str(CURRENT_COUNT) + ", record = " + str(CURRENT_COUNT) + " WHERE id = 1"
     else:
-        sql = "UPDATE counting SET current = " + str(new_count) + " WHERE id = 1"
+        sql = "UPDATE counting SET current = " + str(CURRENT_COUNT) + " WHERE id = 1"
 
     try:
         c.execute(sql)
@@ -147,3 +147,48 @@ def decrease_clip(message_id: str):
         return True
     except:
         return False
+
+
+# Add Member to "No Clip" List
+def add_noclip_member(member_id: str):
+    con = db_connect()
+    c = con.cursor()
+
+    sql = "REPLACE INTO no_clip_members (member_id) VALUES (?)"
+
+    try:
+        c.execute(sql, (member_id,))
+        con.commit()
+        return True
+    except:
+        return False
+
+
+# Remove Member from "No Clip" List
+def remove_noclip_member(member_id: str):
+    con = db_connect()
+    c = con.cursor()
+
+    sql = "DELETE FROM no_clip_members WHERE member_id = ?"
+
+    try:
+        c.execute(sql, (member_id,))
+        con.commit()
+        return True
+    except:
+        return False
+
+
+# Get "No Clip" Members
+def get_noclip_members():
+    con = db_connect()
+    con.row_factory = lambda cursor, row: row[0]
+    c = con.cursor()
+
+    sql = "SELECT member_id FROM no_clip_members"
+
+    try:
+        c.execute(sql)
+        return c.fetchall()
+    except:
+        return []
