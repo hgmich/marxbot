@@ -1,5 +1,6 @@
 import discord
 from discord.ext import commands
+from utils import checks
 import wikipedia
 import random
 
@@ -14,6 +15,7 @@ class Wiki:
 
     # COMMAND: !wiki
     @commands.group(pass_context=True)
+    @checks.is_member()
     async def wiki(self, ctx):
         """Search Wikipedia (EN) for articles and information."""
 
@@ -22,6 +24,7 @@ class Wiki:
 
     # COMMAND: !wiki search
     @wiki.command(name='search')
+    @checks.is_member()
     async def wiki_search(self, *, query: str):
         """Searches Wikipedia for an article based on the given search phrase."""
 
@@ -112,6 +115,7 @@ class Wiki:
 
     # COMMAND: !wiki suggest
     @wiki.command(name='suggest')
+    @checks.is_member()
     async def wiki_suggest(self, *, query: str):
         """Searches Wikipedia for an article based on the given search phrase and returns the best suggestion."""
 
