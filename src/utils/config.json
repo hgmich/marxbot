@@ -1,0 +1,5 @@
+{
+    "bot_token": "token_here",
+    "twitter_consumer_key": "key_here",
+    "twitter_consumer_secret": "secret_here"
+}
