@@ -1,6 +1,6 @@
 import discord
 from discord.ext import commands
-import random
+from utils import checks
 import json
 import os
 
@@ -15,14 +15,12 @@ class Roles:
 
     # COMMAND: !roles
     @commands.command(name='roles', pass_context=True, aliases=['listroles'])
-    @commands.has_role("Comrades")
+    @checks.is_member()
     async def list_roles(self, ctx):
         """Generates a list of joinable roles."""
 
         # Get the JSON file thing.
-        file_path = os.path.normpath("{0}/roles.json".format(
-            os.path.dirname(os.path.realpath(__file__))
-        ))
+        file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'utils/roles.json')
 
         with open(file_path, 'r') as file:
             roles_dict = json.loads(file.read())
@@ -41,7 +39,7 @@ class Roles:
 
     # COMMAND: !join
     @commands.command(name='join', pass_context=True, aliases=['iam'])
-    @commands.has_role("Comrades")
+    @checks.is_member()
     async def join_group(self, ctx, *, group_name: str):
         """Join a group or obtain a specific role."""
 
@@ -50,9 +48,7 @@ class Roles:
         server = ctx.message.server
 
         # Get the JSON file thing.
-        file_path = os.path.normpath("{0}/roles.json".format(
-            os.path.dirname(os.path.realpath(__file__))
-        ))
+        file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'utils/roles.json')
 
         with open(file_path, 'r') as file:
             roles_dict = json.loads(file.read())
@@ -77,7 +73,7 @@ class Roles:
 
     # COMMAND: !leave
     @commands.command(name='leave', pass_context=True, aliases=['iamnot'])
-    @commands.has_role("Comrades")
+    @checks.is_member()
     async def leave_group(self, ctx, *, group_name: str):
         """Leave a group or remove a specific role."""
 
@@ -86,9 +82,7 @@ class Roles:
         server = ctx.message.server
 
         # Get the JSON file thing.
-        file_path = os.path.normpath("{0}/roles.json".format(
-            os.path.dirname(os.path.realpath(__file__))
-        ))
+        file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'utils/roles.json')
 
         with open(file_path, 'r') as file:
             roles_dict = json.loads(file.read())
