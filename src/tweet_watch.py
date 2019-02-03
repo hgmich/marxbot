@@ -4,16 +4,12 @@ import peony
 import peony.oauth_dance
 from peony.exceptions import Unauthorized
 from datetime import datetime
+from utils import config
+from utils import checks
 import json
 import os
 
-DATA_STORE = os.path.normpath("{0}/../tweet_watch_data.json".format(
-    os.path.dirname(os.path.realpath(__file__))
-))
-
-CONSUMER_KEY = "key"
-CONSUMER_SECRET = "secret"
-CHANNEL = "401914128245194752"
+DATA_STORE = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'utils/twitter.json')
 
 
 def is_retweet(data):
@@ -35,7 +31,7 @@ class TweetWatch:
 
     def __init__(self, bot):
         self.bot = bot
-        self.channel = self.bot.get_channel(CHANNEL)
+        self.channel = self.bot.get_channel(config.CHANNEL_ID_TWITTER)
 
         self.reload_config()
 
@@ -68,13 +64,13 @@ class TweetWatch:
         pass
 
     @commands.command(pass_context=True)
-    @commands.has_role("admins!!!")
+    @checks.is_admin()
     async def twitter_setup(self, ctx):
         """Starts the preparation of the Twitter listener."""
         sender = ctx.message.author
 
         auth_url_prefix = "https://api.twitter.com/oauth/authorize?oauth_token="
-        token = await peony.oauth_dance.get_oauth_token(CONSUMER_KEY, CONSUMER_SECRET)
+        token = await peony.oauth_dance.get_oauth_token(config.CONSUMER_KEY, config.CONSUMER_SECRET)
 
         dm_auth = """
 To monitor Twitter feeds, I need to be authorized on behalf of someone's account on Twitter. \
@@ -107,8 +103,8 @@ no longer want to authorize me with Twitter. You can also say 'cancel' at any ti
 
             try:
                 token = await peony.oauth_dance.get_access_token(
-                    CONSUMER_KEY,
-                    CONSUMER_SECRET,
+                    config.CONSUMER_KEY,
+                    config.CONSUMER_SECRET,
                     oauth_verifier=message.content.strip(),
                     **token
                 )
@@ -130,12 +126,12 @@ no longer want to authorize me with Twitter. You can also say 'cancel' at any ti
         await self.bot.send_message(sender, dm_success)
 
     @commands.command()
-    @commands.has_role("admins!!!")
+    @checks.is_admin()
     async def twitter_watch(self, ctx, account):
         pass
 
     @commands.command()
-    @commands.has_role("admins!!!")
+    @checks.is_admin()
     async def twitter_stop(self):
         result = self.cancel_listen_for_tweets()
         if result:
@@ -144,7 +140,7 @@ no longer want to authorize me with Twitter. You can also say 'cancel' at any ti
             await self.bot.say("I can't stop posting tweets as I'm already not posting.")
 
     @commands.command()
-    @commands.has_role("admins!!!")
+    @checks.is_admin()
     async def twitter_start(self):
         if self.client is None:
             await self.bot.say("I can't start posting tweets as I'm not fully set up yet.")
@@ -195,7 +191,7 @@ no longer want to authorize me with Twitter. You can also say 'cancel' at any ti
                                              icon_url="https://abs.twimg.com/icons/apple-touch-icon-192x192.png",
                                              )
 
-                            await self.bot.send_message(self.bot.get_channel(CHANNEL),
+                            await self.bot.send_message(self.bot.get_channel(config.CHANNEL_ID_TWITTER),
                                                         content='https://twitter.com/{user}/status/{tweet_id}'
                                                         .format(user=data['user']['screen_name'], tweet_id=data['id_str']))
                         except Exception as e:
@@ -203,8 +199,8 @@ no longer want to authorize me with Twitter. You can also say 'cancel' at any ti
 
     def setup_twitter_client(self):
         self.client = peony.PeonyClient(
-            consumer_key=CONSUMER_KEY,
-            consumer_secret=CONSUMER_SECRET,
+            consumer_key=config.CONSUMER_KEY,
+            consumer_secret=config.CONSUMER_SECRET,
             **self.config['auth'])
 
     def listen_for_tweets(self):
