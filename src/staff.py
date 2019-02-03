@@ -1,7 +1,9 @@
 import discord
 from discord.ext import commands
-import random
+from utils import checks
+from utils import config
 import datetime
+from datetime import datetime
 
 
 class Staff:
@@ -13,8 +15,9 @@ class Staff:
     # ********************************************** #
 
     # Load Extension
+
     @commands.command(pass_context=True)
-    @commands.has_role("admins!!!")
+    @checks.is_admin()
     async def load(self, ctx, extension_name: str):
         """Loads an extension."""
 
@@ -27,7 +30,7 @@ class Staff:
 
     # Unload Extension
     @commands.command(pass_context=True)
-    @commands.has_role("admins!!!")
+    @checks.is_admin()
     async def unload(self, ctx, extension_name: str):
         """Unloads an extension."""
 
@@ -36,7 +39,7 @@ class Staff:
 
     # COMMAND: !setplaying
     @commands.command()
-    @commands.has_any_role("admins!!!", "mods? mods! mods!?")
+    @checks.is_staff()
     async def setplaying(self, *, game_name: str):
         """Sets Karl's currently playing game."""
 
@@ -45,7 +48,7 @@ class Staff:
 
     # COMMAND: !comrade
     @commands.command(pass_context=True)
-    @commands.has_any_role("admins!!!", "mods? mods! mods!?")
+    @checks.is_staff()
     async def comrade(self, ctx, user: discord.Member):
         """Promotes a Psyop to a Comrade granting full server access."""
 
@@ -56,7 +59,10 @@ class Staff:
 
         new_roles = [role_comrade if x == role_probie else x for x in user.roles]
 
-        channel_general = self.bot.get_channel('338594020101980160')
+        # Get Channels
+        channel_general = self.bot.get_channel(config.CHANNEL_ID_GENERAL)
+        channel_info = self.bot.get_channel(config.CHANNEL_ID_INFO)
+        channel_bot = self.bot.get_channel(config.CHANNEL_ID_BOT)
 
         # Check for Empty User
         if not user:
@@ -72,15 +78,34 @@ class Staff:
                                         "".format(ctx.message.author) + str(e))
             return
 
-        # Success Message
+        # Set username
         username = user.nick if (user.nick is not None) else user.name
-        await self.bot.say('{0.mention}, **{1}** has successfully been made a **Comrade**!'
-                           ''.format(ctx.message.author, username))
-        await self.bot.send_message(channel_general, "Welcome our newest comrade, {0.mention}!".format(user))
+
+        # Approval message in Lobby
+        await self.bot.say('**{1}** has successfully been made a **Comrade**!'.format(ctx.message.author, username))
+
+        # Welcome Message in General
+        await self.bot.send_message(channel_general, "Welcome our newest comrade, {0.mention}! Be sure to take a "
+                                                     "look at {1.mention} for more, including a list of roles (pronouns"
+                                                     ", colors, opt-in channels, etc) that you can join in {2.mention}."
+                                                     " And feel free to DM a staffer if you need help or have any "
+                                                     "questions.".format(user, channel_info, channel_bot))
+
+        # Secondary Welcome DM to User
+        wmsg = "Congratulations {0.mention}! You're now officially a comrade! Now that you have access to the main " \
+               "server check out the {1.mention} channel for details on the different **roles** you can join. Some " \
+               "are for pronouns, some give you access to private channels for recognized groups or private " \
+               "interests, and some just give you a cool name color! When you're ready, head on over to the " \
+               "{2.mention} channel and use `!join` or `!iam` to join your roles! \n\n If you have any questions, " \
+               "feel free to ask a staff member. Thanks again, and welcome to LeftDisc!" \
+               "".format(user, channel_info, channel_bot)
+
+        # Send Private Welcome Message
+        await self.bot.send_message(user, wmsg)
 
     # COMMAND: !psyops
     @commands.command(pass_context=True)
-    @commands.has_any_role("admins!!!", "mods? mods! mods!?")
+    @checks.is_staff()
     async def psyops(self, ctx, page: int = 1):
         """Lists the current Psyops/probationary users and their Join Date. 20 users per page."""
 
@@ -124,16 +149,16 @@ class Staff:
 
     # COMMAND !cleanup
     @commands.command(pass_context=True)
-    @commands.has_any_role("admins!!!", "mods? mods! mods!?")
+    @checks.is_admin()
     async def cleanup(self, ctx, certain: str = "n"):
         """Clears members in the Psyops group who have been in the server for more than 24 hours."""
 
         # Get Variables
         server = ctx.message.server
         all_members = server.members
-        role_probie = discord.utils.get(server.roles, name="Psyops")
+        role_probie = discord.utils.get(server.roles, id=config.ROLE_ID_DEFAULT)
         psyops_members = [member for member in all_members if role_probie in member.roles]
-        now = datetime.datetime.utcnow()
+        now = datetime.utcnow()
 
         total = 0
 
@@ -154,6 +179,81 @@ class Staff:
             return
 
         await self.bot.say("**Total Purged Users**: " + str(total))
+
+    # COMMAND !setcounting
+    @commands.command(pass_context=True)
+    @checks.is_staff()
+    async def setcounting(self, ctx, newcount: int):
+        """For correcting counting. Sets current count and updates counting."""
+        
+        config.CURRENT_COUNT = newcount
+        
+        updated = config.update_counting()
+        
+        if updated:
+            await self.bot.say("Current count set and stats updated.")
+        else:
+            await self.bot.say("**ERROR**: There was an error setting the count and updating the stats.")
+
+    # COMMAND !updatecounting
+    @commands.command(pass_context=True)
+    @checks.is_staff()
+    async def updatecounting(self, ctx):
+        """Force updates counting."""
+
+        updated = config.update_counting()
+
+        if updated:
+            await self.bot.say("Counting stats have been updated.")
+        else:
+            await self.bot.say("**ERROR**: Counting stats could not be updated.")
+
+
+
+    # COMMAND !clip
+    @commands.command(pass_context=True)
+    @checks.is_staff()
+    async def clip(self, ctx, channel: discord.Channel, message_id: str):
+        """Manually clip and item when clipping fails for some reason."""
+        
+        # The message
+        msg = await self.bot.get_message(channel, message_id)
+
+        # Check for Message Already In
+        if config.on_clipboard(msg.id):
+            return
+
+        # Set the Clipboard Channel
+        clipboard = self.bot.get_channel(config.CHANNEL_ID_CLIPBOARD)
+
+        # have to add a check here to make sure its not the pin board itself
+        if channel == clipboard:
+            return
+
+        # Check if Message Author is in "No Clip" List
+        if msg.author in config.get_noclip_members():
+            return
+
+        # Setup Embed
+        embed = discord.Embed(colour=discord.Colour(0xca0003), description=msg.content, timestamp=datetime.now())
+
+        if msg.embeds:
+            data = msg.embeds[0]
+            if data.type == 'image':
+                embed.set_image(url=data.url)
+
+        if msg.attachments:
+            file = msg.attachments[0]
+            if file['url'].lower().endswith(('png', 'jpeg', 'jpg', 'gif', 'webp')):
+                embed.set_image(url=file['url'])
+            else:
+                embed.add_field(name='Attachment', value='[' + file['url'] + '](' + file['filename'] + ')', inline=False)
+
+        embed.set_author(name=msg.author.display_name, icon_url=msg.author.avatar_url)
+
+        clip_msg = await self.bot.send_message(clipboard, content="📋 - from {0.mention}".format(msg.channel), embed=embed)
+
+        config.add_clipboard(msg.id, clip_msg.id)
 
 
 def setup(bot):
