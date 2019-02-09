@@ -208,8 +208,6 @@ class Staff:
         else:
             await self.bot.say("**ERROR**: Counting stats could not be updated.")
 
-
-
     # COMMAND !clip
     @commands.command(pass_context=True)
     @checks.is_staff()
@@ -254,6 +252,57 @@ class Staff:
         clip_msg = await self.bot.send_message(clipboard, content="📋 - from {0.mention}".format(msg.channel), embed=embed)
 
         config.add_clipboard(msg.id, clip_msg.id)
+
+    # COMMAND !addrole
+    @commands.command(pass_context=True)
+    @checks.is_staff()
+    async def addrole(self, ctx, role_type: str, *, role_name: str):
+        """Add a role to the roles users can join via the !join command."""
+
+        # Allowed Types
+        allowed_types = ["region", "pronoun", "game", "color", "private", "interest"]
+
+        # Check for Allowed Role Types
+        if role_type not in allowed_types:
+            await self.bot.say("**ERROR**: The role type must be one of the allowed types: <region, pronoun, game, "
+                               "color, private, interest>")
+            return
+
+        # Server
+        server = ctx.message.server
+
+        # The Role
+        role = discord.utils.get(server.roles, name=role_name)
+
+        # Make Sure the Role is Valid
+        if role is None:
+            await self.bot.say("**ERROR**: There is no role with that name on the server. You must type the role name "
+                               "exactly as it appears in the role list.")
+            return
+
+        # Add the Role to the List
+        added = config.add_joinable_role(role.id, role_name, role_type)
+
+        # Return Success/Failure Message
+        if added:
+            await self.bot.say("The role has been added to the list.")
+        else:
+            await self.bot.say("**ERROR**: The role could not be added.")
+
+    # COMMAND !removerole
+    @commands.command(pass_context=True)
+    @checks.is_staff()
+    async def removerole(self, ctx, *, role_name: str):
+        """Add a role to the roles users can join via the !join command."""
+
+        # Remove Role from List
+        removed = config.remove_joinable_role(role_name)
+
+        # Return Success/Failure Message
+        if removed:
+            await self.bot.say("The role has been removed from the list.")
+        else:
+            await self.bot.say("**ERROR**: The role could not be removed.")
 
 
 def setup(bot):
