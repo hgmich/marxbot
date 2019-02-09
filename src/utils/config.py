@@ -200,6 +200,84 @@ def get_noclip_members():
         return []
 
 
+# Add Role to Role List
+def add_joinable_role(role_id: str, role_name: str, role_type: str):
+    con = db_connect()
+    c = con.cursor()
+
+    sql = "REPLACE INTO joinable_roles (id, name, name_lower, type) VALUES (?, ?, ?, ?)"
+
+    try:
+        c.execute(sql, (role_id, role_name, role_name.lower(), role_type))
+        con.commit()
+        return True
+    except:
+        return False
+
+
+# Remove Role from Role List
+def remove_joinable_role(role_name: str):
+    con = db_connect()
+    c = con.cursor()
+
+    sql = "DELETE FROM joinable_roles WHERE name = ?"
+
+    try:
+        c.execute(sql, (role_name,))
+        con.commit()
+        return True
+    except:
+        return False
+
+
+# Get Roles of Specific Type
+def get_roles_by_type(role_type: str):
+    con = db_connect()
+    con.row_factory = lambda cursor, row: row[0]
+    c = con.cursor()
+
+    sql = "SELECT name FROM joinable_roles WHERE type = ? ORDER BY name ASC"
+
+    # Get Roles
+    type_roles = c.execute(sql, (role_type,)).fetchall()
+
+    # Cleanup
+    c.close()
+    con.close()
+
+    return type_roles
+
+
+# Get Role ID from Role Name Lowercase
+def get_role_id_from_lowername(name_lower: str):
+    con = db_connect()
+    c = con.cursor()
+
+    sql = "SELECT id FROM joinable_roles WHERE name_lower = ?"
+
+    try:
+        c.execute(sql, (name_lower,))
+        row = c.fetchone()
+        return row[0]
+    except:
+        return None
+
+
+# Get Role ID from Role Name Lowercase
+def get_role_name_from_id(role_id: str):
+    con = db_connect()
+    c = con.cursor()
+
+    sql = "SELECT name FROM joinable_roles WHERE id = ?"
+
+    try:
+        c.execute(sql, (role_id,))
+        row = c.fetchone()
+        return row[0]
+    except:
+        return None
+
+
 # Add Info to Profile
 def update_profile_info(member_id: str, field: str, data: str):
     con = db_connect()
