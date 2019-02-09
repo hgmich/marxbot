@@ -1,9 +1,7 @@
 import discord
 from discord.ext import commands
 from utils import checks
-import json
-import os
-
+from utils import config
 
 class Roles:
     def __init__(self, bot):
@@ -19,96 +17,97 @@ class Roles:
     async def list_roles(self, ctx):
         """Generates a list of joinable roles."""
 
-        # Get the JSON file thing.
-        file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'utils/roles.json')
-
-        with open(file_path, 'r') as file:
-            roles_dict = json.loads(file.read())
+        allowed_types = ["Pronoun", "Private", "Region", "Interest", "Game", "Color"]
 
         # Setup Message
-        message = "Below is a list of roles you may join.\n ```\n"
+        message = "Below is a list of roles you may join. Please see the info channel for more details.\n"
 
         # Add Groups
-        for x in (sorted(set(roles_dict.values()))):
-            message += x + "\n"
+        for role_type in allowed_types:
 
-        # Finalize Message
-        message += "```"
+            # Set List Heading and Start
+            message += "\n**" + role_type + " Roles**\n```\n"
+
+            # Get Roles
+            type_roles = config.get_roles_by_type(role_type.lower())
+
+            # Loop Through Roles in that Type
+            for role in type_roles:
+                message += role + "\n"
+
+            # Finalize Message
+            message += "```"
 
         await self.bot.say(message)
 
     # COMMAND: !join
     @commands.command(name='join', pass_context=True, aliases=['iam'])
     @checks.is_member()
-    async def join_group(self, ctx, *, group_name: str):
+    async def join_group(self, ctx, *, role_name: str):
         """Join a group or obtain a specific role."""
 
         # Get User and Server
         user = ctx.message.author
         server = ctx.message.server
 
-        # Get the JSON file thing.
-        file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'utils/roles.json')
-
-        with open(file_path, 'r') as file:
-            roles_dict = json.loads(file.read())
+        # Try to get the Role ID
+        role_id = config.get_role_id_from_lowername(role_name.lower())
 
         # Check for Allowed Role
-        if group_name.lower() not in roles_dict:
-            await self.bot.say("{0.mention}, you must select one of the public groups to join.".format(user))
+        if role_id is None:
+            await self.bot.say("{0.mention}, you must select one of the public groups to join. Use `!roles` for a list "
+                               "of roles members may join".format(user))
             return
 
         # Try to Grant the Role
         try:
-            role = discord.utils.get(server.roles, name=roles_dict[group_name.lower()])
+            role = discord.utils.get(server.roles, id=role_id)
             await self.bot.add_roles(user, role)
         except Exception as e:
             await self.bot.say(
                 "{0.mention}, there was an error updating your roles. **Error**: ".format(user) + str(e))
             return
 
+        # Get Role Name from ID
+        role_name_full = config.get_role_name_from_id(role_id)
+
         # Success Message
         await self.bot.say(
-            "{0.mention}, you have been given the role **{1}**.".format(user, roles_dict[group_name.lower()]))
+            "{0.mention}, you have been given the role **{1}**.".format(user, role_name_full))
 
     # COMMAND: !leave
     @commands.command(name='leave', pass_context=True, aliases=['iamnot'])
     @checks.is_member()
-    async def leave_group(self, ctx, *, group_name: str):
+    async def leave_group(self, ctx, *, role_name: str):
         """Leave a group or remove a specific role."""
 
         # Get User and Server
         user = ctx.message.author
         server = ctx.message.server
 
-        # Get the JSON file thing.
-        file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'utils/roles.json')
-
-        with open(file_path, 'r') as file:
-            roles_dict = json.loads(file.read())
+        # Try to get the Role ID
+        role_id = config.get_role_id_from_lowername(role_name.lower())
 
         # Check for Allowed Role
-        if group_name.lower() not in roles_dict:
-            if "mod" in group_name.lower():
-                await self.bot.say("{0.mention}, if you try to make yourself a mod too much we might have to "
-                                   "send you to the gulags.".format(user))
-                return
-            else:
-                await self.bot.say("{0.mention}, you must select one of the public groups to leave.".format(user))
-                return
+        if role_id is None:
+            await self.bot.say("{0.mention}, you must select one of the public groups to leave.".format(user))
+            return
 
-        # Try to Grant the Role
+        # Try to Remove the Role
         try:
-            role = discord.utils.get(server.roles, name=roles_dict[group_name.lower()])
+            role = discord.utils.get(server.roles, id=role_id)
             await self.bot.remove_roles(user, role)
         except Exception as e:
             await self.bot.say(
                 "{0.mention}, there was an error updating your roles. **Error**: ".format(user) + str(e))
             return
 
+        # Get Role Name from ID
+        role_name_full = config.get_role_name_from_id(role_id)
+
         # Success Message
         await self.bot.say(
-            "{0.mention}, your **{1}** role has been removed.".format(user, roles_dict[group_name.lower()]))
+            "{0.mention}, your **{1}** role has been removed.".format(user, role_name_full))
 
 
 def setup(bot):
