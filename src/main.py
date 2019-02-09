@@ -29,7 +29,7 @@ bot = commands.Bot(command_prefix='!', description="Karl Marxbot.")
 @bot.event
 async def on_ready():
     print('..... Marxbot has started .....')
-    await bot.change_presence(game=discord.Game(name='Communism Simulator 2.5'))
+    await bot.change_presence(game=discord.Game(name='Bot Version 2.6'))
 
 
 # Welcome Message
