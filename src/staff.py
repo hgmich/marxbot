@@ -70,6 +70,11 @@ class Staff:
             await self.bot.say("**Error**: Missing required <user>.")
             return
 
+        # Check For Already Comrade
+        if role_comrade in user.roles:
+            await self.bot.say("**ERROR**: User is already a comrade!")
+            return
+
         # Try switching the roles
         try:
             await self.bot.replace_roles(user, *new_roles)
