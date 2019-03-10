@@ -20,7 +20,7 @@ logger.addHandler(handler)
 description = '''Famed Economic Theorist and Supporter of the Working Peoples' Servers.'''
 
 # This specifies what extensions to load when the bot starts up
-startup_extensions = ["general", "roles", "music", "wiki", "staff", "tweet_watch"]
+startup_extensions = ["general", "roles", "games", "music", "wiki", "staff", "tweet_watch"]
 
 # Setup Bot
 bot = commands.Bot(command_prefix='!', description="Karl Marxbot.")
@@ -29,7 +29,7 @@ bot = commands.Bot(command_prefix='!', description="Karl Marxbot.")
 @bot.event
 async def on_ready():
     print('..... Marxbot has started .....')
-    await bot.change_presence(game=discord.Game(name='Bot Version 2.6'))
+    await bot.change_presence(game=discord.Game(name='Bot Version 2.7'))
 
 
 # Welcome Message
@@ -82,6 +82,9 @@ async def on_member_remove(member):
 
     # Post Alert in Join-Leave Channel
     await bot.send_message(channel_join_leave, alert_msg)
+
+    # Remove from Game Profiles
+    config.delete_game_profile(user_id)
 
 
 # Check Messages
