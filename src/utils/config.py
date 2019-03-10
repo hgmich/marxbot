@@ -76,6 +76,9 @@ CONSUMER_SECRET = config["twitter_consumer_secret"]
 # Allowed Pin Channels
 ALLOWED_PIN_CHANNELS = pin_channels
 
+# GAME ROSTER SETTINGS
+ALLOWED_GAME_SYSTEMS = ['bnet', 'epic', 'origin', 'psn', 'steam', 'switch', 'xbl']
+
 
 # Update Counting
 def update_counting():
@@ -276,6 +279,71 @@ def get_role_name_from_id(role_id: str):
         return row[0]
     except:
         return None
+
+
+# Add/Edit Game Profile Info
+def update_game_profile(member_id: str, game_system: str, game_id: str):
+    con = db_connect()
+    c = con.cursor()
+
+    sql1 = "INSERT OR IGNORE INTO game_profile (discord_id, " + game_system + ") VALUES (?, ?)"
+    sql2 = "UPDATE game_profile SET " + game_system + " = '" + game_id + "' WHERE discord_id = " + member_id
+
+    try:
+        c.execute(sql1, (member_id, game_id))
+        c.execute(sql2)
+        con.commit()
+        return True
+    except:
+        return False
+
+
+# Remove Game Profile Info
+def remove_game_profile(member_id: str, game_system: str):
+    con = db_connect()
+    c = con.cursor()
+
+    sql = "UPDATE game_profile SET " + game_system + " = NULL WHERE discord_id = " + member_id
+
+    try:
+        c.execute(sql)
+        con.commit()
+        return True
+    except:
+        return False
+
+
+# Delete All Game Profile Info
+def delete_game_profile(member_id: str):
+    con = db_connect()
+    c = con.cursor()
+
+    sql = "DELETE FROM game_profile WHERE discord_id = " + member_id
+
+    try:
+        c.execute(sql)
+        con.commit()
+        return True
+    except:
+        return False
+
+
+# Get Game Profiles of Specific System
+def get_game_profiles_by_system(game_system: str):
+    con = db_connect()
+    con.row_factory = sqlite3.Row
+    c = con.cursor()
+
+    sql = "SELECT discord_id, " + game_system + " FROM game_profile WHERE " + game_system + " IS NOT NULL"
+
+    # Get Profiles
+    profiles = c.execute(sql).fetchall()
+
+    # Cleanup
+    c.close()
+    con.close()
+
+    return profiles
 
 
 # Add Info to Profile
