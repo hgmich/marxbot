@@ -46,3 +46,11 @@ def is_member():
         return check_role(ctx, lambda r: r.id == config.ROLE_ID_MEMBER)
 
     return commands.check(predicate)
+
+
+# Check for User Allowed to Use Events
+def can_use_events():
+    def predicate(ctx):
+        return not check_role(ctx, lambda r: r.id == config.ROLE_ID_NO_EVENTS)
+
+    return commands.check(predicate)
