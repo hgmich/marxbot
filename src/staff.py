@@ -39,13 +39,14 @@ class Staff:
         await self.bot.say("{} unloaded.".format(extension_name))
 
     # COMMAND: !setplaying
-    @commands.command()
+    @commands.command(pass_context=True)
     @checks.is_staff()
-    async def setplaying(self, *, game_name: str):
+    async def setplaying(self, ctx, *, game_name: str):
         """Sets Karl's currently playing game."""
 
         await self.bot.change_presence(game=discord.Game(name=game_name))
-        await self.bot.say("I just started playing this game, **{0}**! You should try it!".format(game_name))
+        await self.bot.delete_message(ctx.message)
+        await self.bot.say("I just started playing **{0}**! You should try it!".format(game_name))
 
     # COMMAND: !comrade
     @commands.command(pass_context=True)
@@ -201,6 +202,8 @@ class Staff:
         else:
             await self.bot.say("**ERROR**: There was an error setting the count and updating the stats.")
 
+        await self.bot.delete_message(ctx.message)
+
     # COMMAND !updatecounting
     @commands.command(pass_context=True)
     @checks.is_staff()
@@ -214,6 +217,8 @@ class Staff:
         else:
             await self.bot.say("**ERROR**: Counting stats could not be updated.")
 
+        await self.bot.delete_message(ctx.message)
+
     # COMMAND !clip
     @commands.command(pass_context=True)
     @checks.is_staff()
@@ -224,6 +229,19 @@ class Staff:
         msg = await self.bot.get_message(channel, message_id)
 
         await clip_message(msg, self.bot)
+        await self.bot.delete_message(ctx.message)
+
+    # COMMAND !say
+    @commands.command(pass_context=True)
+    @checks.is_staff()
+    async def say(self, ctx, channel: discord.Channel, *, message_string: str):
+        """Have Marxbot say a message in a specific channel."""
+
+        # Say the Message
+        await self.bot.send_message(channel, message_string)
+
+        # Delete the Command
+        await self.bot.delete_message(ctx.message)
 
     # COMMAND !addrole
     @commands.command(pass_context=True)
@@ -275,6 +293,21 @@ class Staff:
             await self.bot.say("The role has been removed from the list.")
         else:
             await self.bot.say("**ERROR**: The role could not be removed.")
+
+    # COMMAND !cleanevents
+    @commands.command()
+    @checks.is_staff()
+    async def cleanevents(self):
+        """Allows staff to clean up events. Purges all roles older than 2 weeks, and deleted old events from the calendar."""
+
+        # Clean Up Events
+        cleanup = config.clean_events()
+
+        # Return Success/Failure Message
+        if cleanup:
+            await self.bot.say("Event roles and calendar entries have been cleaned.")
+        else:
+            await self.bot.say("**ERROR**: Events are still messy; I couldn't clean them up.")
 
 
 def setup(bot):
