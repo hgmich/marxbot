@@ -1,6 +1,7 @@
 import sqlite3
 import json
 import os
+import datetime
 
 # Point to DB and Config File
 INFO_DB = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'info.db')
@@ -64,6 +65,9 @@ ROLE_ID_ADMIN = roles["admin"]
 ROLE_ID_MOD = roles["mod"]
 ROLE_ID_MEMBER = roles["member"]
 ROLE_ID_DEFAULT = roles["default"]
+
+# PUNITIVE ROLES
+ROLE_ID_NO_EVENTS = roles["no_events"]
 
 # COUNTING
 CURRENT_COUNT = counting_config["current"]
@@ -346,30 +350,150 @@ def get_game_profiles_by_system(game_system: str):
     return profiles
 
 
-# Add Info to Profile
-def update_profile_info(member_id: str, field: str, data: str):
+# Add Role to Event Role List
+def add_event_role(role_id: str, role_name: str, creator_id: str, date_created: str):
     con = db_connect()
     c = con.cursor()
 
-    sql = "REPLACE INTO profiles (?) VALUES (?) WHERE user_id = ?"
+    sql = "INSERT INTO event_roles (role_id, role_name, creator_id, date_created) VALUES (?, ?, ?, ?)"
 
     try:
-        c.execute(sql, (field, data, member_id))
+        c.execute(sql, (role_id, role_name, creator_id, date_created))
         con.commit()
         return True
     except:
         return False
 
 
-# Get Profile Info
-def get_field_users(field: str):
+# Remove Role from Event Role List
+def remove_event_role(role_id: str):
     con = db_connect()
     c = con.cursor()
 
-    sql = "SELECT member_id, ? FROM profiles WHERE member_id IS NOT NULL AND ? IS NOT NULL"
+    sql = "DELETE FROM event_roles WHERE role_id = ?"
 
     try:
-        c.execute(sql, (field, field))
-        return c.fetchall()
+        c.execute(sql, (role_id,))
+        con.commit()
+        return True
     except:
-        return []
+        return False
+
+
+# Get Event Role Info from Name
+def get_event_role_info(role_name: str):
+    con = db_connect()
+    con.row_factory = sqlite3.Row
+    c = con.cursor()
+
+    sql = "SELECT * FROM event_roles WHERE role_name = ?"
+
+    try:
+        c.execute(sql, (role_name,))
+        row = c.fetchone()
+        return row
+    except:
+        return None
+
+
+# Add Event to Event Calendar
+def add_event_calendar(member_id: str, event_date: str, event_description: str):
+    con = db_connect()
+    c = con.cursor()
+
+    sql = "INSERT INTO event_calendar (event_date, planner_id, description) VALUES (?, ?, ?)"
+
+    try:
+        c.execute(sql, (event_date, member_id, event_description))
+        con.commit()
+        return True
+    except:
+        return False
+
+
+# Update Event in the Event Calendar
+def update_event_calendar(event_id: int, event_date: str, event_description: str):
+    con = db_connect()
+    c = con.cursor()
+
+    sql = "UPDATE event_calendar SET event_date = ?, description = ? WHERE event_id = ?"
+
+    try:
+        c.execute(sql, (event_date, event_description, event_id))
+        con.commit()
+        return True
+    except:
+        return False
+
+
+# Remove Event from Event Calendar
+def remove_event_calendar(event_id: int):
+    con = db_connect()
+    c = con.cursor()
+
+    sql = "DELETE FROM event_calendar WHERE event_id = ?"
+
+    try:
+        c.execute(sql, (event_id,))
+        con.commit()
+        return True
+    except:
+        return False
+
+
+# Get Specific Event from Calendar by Event ID
+def get_calendar_event(event_id: int):
+    con = db_connect()
+    con.row_factory = sqlite3.Row
+    c = con.cursor()
+
+    sql = "SELECT * FROM event_calendar WHERE event_id = ?"
+
+    try:
+        c.execute(sql, (event_id,))
+        row = c.fetchone()
+        return row
+    except:
+        return None
+
+
+# Get Events In Calendar
+def get_events_in_calendar():
+    con = db_connect()
+    con.row_factory = sqlite3.Row
+    c = con.cursor()
+
+    # Set Date
+    today = datetime.date.today().strftime('%Y-%m-%d')
+
+    sql = "SELECT * FROM event_calendar WHERE event_date >= ? ORDER BY event_date LIMIT 25"
+
+    # Get Profiles
+    events = c.execute(sql, (today,)).fetchall()
+
+    # Cleanup
+    c.close()
+    con.close()
+
+    return events
+
+
+# Purge Old Event Information (Roles and Calendar)
+def clean_events():
+    con = db_connect()
+    c = con.cursor()
+
+    # Set Dates
+    today = datetime.date.today().strftime('%Y-%m-%d')
+    two_weeks_ago = (datetime.date.today() - datetime.timedelta(days=14)).strftime('%Y-%m-%d')
+
+    sql_roles = "DELETE FROM event_roles WHERE date_created < ?"
+    sql_calendar = "DELETE FROM event_calendar WHERE event_date < ?"
+
+    try:
+        c.execute(sql_roles, (two_weeks_ago,))
+        c.execute(sql_calendar, (today,))
+        con.commit()
+        return True
+    except:
+        return False
