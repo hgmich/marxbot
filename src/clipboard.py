@@ -6,7 +6,7 @@ from utils import config
 async def on_clip(reaction, user, bot):
 
     # Check for Needed Reacts
-    if reaction.count < 5:
+    if reaction.count < 6:
         return
 
     # The message
