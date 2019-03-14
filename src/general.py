@@ -3,6 +3,8 @@ from discord.ext import commands
 from utils import checks
 from utils import config
 import random
+import json
+import aiohttp
 
 
 class General:
@@ -27,15 +29,17 @@ class General:
             await self.bot.send_message(ctx.message.channel, msg)
 
     # COMMAND: !markdown
-    @commands.command()
+    @commands.command(pass_context=True)
     @checks.is_member()
-    async def markdown(self):
+    async def markdown(self, ctx):
         """Get the lowdown about Discord markdown."""
 
         msg = "Read up about Discord's markdown here comrade: " \
               "https://support.discordapp.com/hc/en-us/articles/210298617-Markdown-Text-101-Chat-Formatting-Bold-Italic-Underline-"
 
         await self.bot.say(msg)
+
+        await self.bot.delete_message(ctx.message)
 
     # COMMAND: !8ball
     @commands.command(name='8ball', pass_context=True)
@@ -80,6 +84,8 @@ class General:
         # SEND THE ANSWER EMBED
         await self.bot.say(embed=embed)
         # await self.bot.say('{0.message.author.mention}, '.format(ctx) + random.choice(answers))
+
+        await self.bot.delete_message(ctx.message)
 
     # COMMAND: !roll
     @commands.command()
@@ -147,6 +153,8 @@ class General:
 
         await self.bot.say(embed=embed)
 
+        await self.bot.delete_message(ctx.message)
+
     # COMMAND: !invite
     @commands.command(pass_context=True)
     @checks.is_member()
@@ -170,6 +178,8 @@ class General:
         # Send Message with Invite Link
         await self.bot.say('Your newly generated invite link is: {0.url}'.format(new_invite))
 
+        await self.bot.delete_message(ctx.message)
+
     # COMMAND: !dontclip
     @commands.command(pass_context=True)
     @checks.is_member()
@@ -184,6 +194,8 @@ class General:
             await self.bot.say("You were successfully added to the **No Clip** list.")
         else:
             await self.bot.say("**ERROR**: There was an error adding you to the **No Clip** list.")
+
+        await self.bot.delete_message(ctx.message)
 
     # COMMAND: !doclip
     @commands.command(pass_context=True)
@@ -203,6 +215,50 @@ class General:
             await self.bot.say("You were successfully removed from the **No Clip** list.")
         else:
             await self.bot.say("**ERROR**: There was an error removing you from the **No Clip** list.")
+
+        await self.bot.delete_message(ctx.message)
+
+    # COMMAND: !dog
+    @commands.command(pass_context=True)
+    @checks.is_member()
+    async def dog(self, ctx):
+        """Gets a random dog picture."""
+
+        is_video = True
+
+        while is_video:
+            async with aiohttp.ClientSession() as cs:
+                async with cs.get('https://random.dog/woof.json') as r:
+                    res = await r.json()
+                    res = res['url']
+                    cs.close()
+            if res.endswith('.mp4'):
+                pass
+            else:
+                is_video = False
+
+        em = discord.Embed()
+        em.set_footer(text="Requested by: " + ctx.message.author.display_name)
+
+        await self.bot.send_message(ctx.message.channel, embed=em.set_image(url=res))
+        await self.bot.delete_message(ctx.message)
+
+    # COMMAND: !cat
+    @commands.command(pass_context=True)
+    @checks.is_member()
+    async def cat(self, ctx):
+        """Gets a random cat picture."""
+
+        async with aiohttp.ClientSession() as cs:
+            async with cs.get('http://aws.random.cat/meow') as r:
+                res = await r.json()
+                cs.close()
+
+        em = discord.Embed()
+        em.set_footer(text="Requested by: " + ctx.message.author.display_name)
+
+        await self.bot.send_message(ctx.message.channel, embed=em.set_image(url=res['file']))
+        await self.bot.delete_message(ctx.message)
 
 
 def setup(bot):
