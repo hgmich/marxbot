@@ -58,7 +58,7 @@ async def clip_message(message, bot):
     embed.add_field(name='Message', value=message.content, inline=False)
 
     if message.embeds:
-        data = message.embeds[0]
+        data = discord.Embed.from_data(message.embeds[0])
         if data.type == 'image':
             embed.set_image(url=data.url)
 
