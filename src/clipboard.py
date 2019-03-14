@@ -54,8 +54,9 @@ async def clip_message(message, bot):
     embed = discord.Embed(colour=discord.Colour(0xca0003), description="[View Original Post](" + embed_url + ")",
                           timestamp=datetime.now())
 
-    # Add Message Content Field
-    embed.add_field(name='Message', value=message.content, inline=False)
+    # Add Message Content Field If There Was a Message
+    if message.content:
+        embed.add_field(name='Message', value=message.content, inline=False)
 
     if message.embeds:
         data = discord.Embed.from_data(message.embeds[0])
