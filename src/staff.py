@@ -17,9 +17,9 @@ class Staff:
 
     # Load Extension
 
-    @commands.command(pass_context=True)
+    @commands.command()
     @checks.is_admin()
-    async def load(self, ctx, extension_name: str):
+    async def load(self, extension_name: str):
         """Loads an extension."""
 
         try:
@@ -30,9 +30,9 @@ class Staff:
         await self.bot.say("{} loaded.".format(extension_name))
 
     # Unload Extension
-    @commands.command(pass_context=True)
+    @commands.command()
     @checks.is_admin()
-    async def unload(self, ctx, extension_name: str):
+    async def unload(self, extension_name: str):
         """Unloads an extension."""
 
         self.bot.unload_extension(extension_name)
@@ -142,8 +142,6 @@ class Staff:
             # Check for Break
             if i == (start_index + 21):
                 break
-
-        # print(psyops_list)
 
         # Create Embed Table
         embed = discord.Embed(title="Current Psyops Users: " + str(len(psyops_members)), colour=1315860,
@@ -280,9 +278,9 @@ class Staff:
             await self.bot.say("**ERROR**: The role could not be added.")
 
     # COMMAND !removerole
-    @commands.command(pass_context=True)
+    @commands.command()
     @checks.is_staff()
-    async def removerole(self, ctx, *, role_name: str):
+    async def removerole(self, *, role_name: str):
         """Add a role to the roles users can join via the !join command."""
 
         # Remove Role from List
@@ -308,6 +306,113 @@ class Staff:
             await self.bot.say("Event roles and calendar entries have been cleaned.")
         else:
             await self.bot.say("**ERROR**: Events are still messy; I couldn't clean them up.")
+
+    # COMAND !chanstats
+    @commands.command(pass_context=True)
+    @checks.is_staff()
+    async def chanstats(self, ctx, start_date: str = None, end_date: str = None, channel: discord.Channel = None):
+        """Creates a stats list per-channel of message count or unique users for a given time frame or, if provided a specific channel, lists stats for that channel. BE AWARE THIS SENDS MANY MESSAGES AND CAN TAKE QUITE AWHILE! BE PATIENT!"""
+
+        # Check for Valid Start Date and Set
+        try:
+            start_datetime = datetime.strptime(start_date + ' 00:00', '%Y-%m-%d %H:%M')
+        except ValueError:
+            await self.bot.say("**ERROR**: Start date must be valid and in YYYY-MM-DD format.")
+            return
+
+        # Check for Valid End Date and Set
+        try:
+            end_datetime = datetime.strptime(end_date + ' 23:59', '%Y-%m-%d %H:%M')
+        except ValueError:
+            await self.bot.say("**ERROR**: End date must be valid and in YYYY-MM-DD format.")
+            return
+
+        # Handle Single Channel
+        if channel is not None:
+
+            # Setup Users and Messages
+            unique_users = []
+            total_messages = 0
+
+            async for m in self.bot.logs_from(channel, limit=50000, before=end_datetime, after=start_datetime):
+
+                # Unique Users
+                if m.author.id not in unique_users:
+                    unique_users.append(m.author.id)
+
+                # Total Messages
+                total_messages += 1
+
+            # Get Total users
+            total_users = len(unique_users)
+
+            # Print Stats
+            await self.bot.say(channel.mention + ": " + str(total_messages) + " messages, " + str(total_users) + " users")
+
+            # Exit Command
+            return
+
+        # Server
+        server = ctx.message.server
+
+        # Start the Embed
+        # embed = discord.Embed(title="LeftDisc Channel Stats", colour=12326244)
+        # embed.set_thumbnail(url=server.icon_url)
+        # embed.set_footer(text="Stats Between " + start_date + " and " + end_date)
+
+        # Get the Channels Minus Ignored Channels
+        channels = [channel for channel in server.channels if channel.id not in config.NO_STATS_CHANNELS and channel.type == discord.ChannelType.text]
+
+        # Sort the Channels
+        channels.sort(key=lambda x: x.position, reverse=False)
+
+        # Start Channel Mentions and Stats
+        # channel_mentions = ''
+        # channel_stats = ''
+        # i = 1
+
+        await self.bot.say("__**CHANNEL STATS FROM " + start_date + " TO " + end_date + " **__" + "\n" +
+                           "Please do not interrupt until I say all stats have been printed!")
+
+        for c in channels:
+
+            # Setup Users and Messages
+            unique_users = []
+            total_messages = 0
+
+            # Get Messages
+            async for m in self.bot.logs_from(c, limit=50000, before=end_datetime, after=start_datetime):
+
+                # Unique Users
+                if m.author.id not in unique_users:
+                    unique_users.append(m.author.id)
+
+                # Total Messages
+                total_messages += 1
+
+            # Get Total users
+            total_users = len(unique_users)
+
+            # Print Stats
+            # print("Stats for #" + c.name + ": " + str(total_messages) + " messages, " + str(total_users) + " users")
+            await self.bot.say(c.mention + ": " + str(total_messages) + " messages, " + str(total_users) + " users")
+
+            # Add To Lists
+            # channel_mentions += "**" + str(i) + "**. " + c.mention + "\n"
+            # channel_stats += "**" + str(i) + "**. " + str(total_messages) + " M, " + str(total_users) + " U\n"
+
+            # Increase Counter
+            # i += 1
+
+        # Add Stats to Embed
+        # embed.add_field(name="Channel", value=channel_mentions, inline=True)
+        # embed.add_field(name="Stats (Msgs, Users)", value=channel_stats, inline=True)
+
+        # Send Table to Channel
+        # await self.bot.send_message(ctx.message.channel, embed=embed)
+
+        # Send Complete Message
+        await self.bot.say("__**STATS COMPLETE**__")
 
 
 def setup(bot):
