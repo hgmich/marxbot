@@ -5,6 +5,7 @@ from utils import config
 from clipboard import clip_message
 import datetime
 from datetime import datetime
+import csv
 
 
 class Staff:
@@ -334,7 +335,7 @@ class Staff:
             unique_users = []
             total_messages = 0
 
-            async for m in self.bot.logs_from(channel, limit=50000, before=end_datetime, after=start_datetime):
+            async for m in self.bot.logs_from(channel, limit=100000, before=end_datetime, after=start_datetime):
 
                 # Unique Users
                 if m.author.id not in unique_users:
@@ -381,7 +382,7 @@ class Staff:
             total_messages = 0
 
             # Get Messages
-            async for m in self.bot.logs_from(c, limit=50000, before=end_datetime, after=start_datetime):
+            async for m in self.bot.logs_from(c, limit=100000, before=end_datetime, after=start_datetime):
 
                 # Unique Users
                 if m.author.id not in unique_users:
@@ -413,6 +414,70 @@ class Staff:
 
         # Send Complete Message
         await self.bot.say("__**STATS COMPLETE**__")
+
+    # COMAND !chanstatcsv
+    @commands.command(pass_context=True)
+    @checks.is_staff()
+    async def chanstatcsv(self, ctx, start_date: str = None, end_date: str = None):
+        """Creates a CSV file containing channel stats for a given timeframe."""
+
+        # Check for Valid Start Date and Set
+        try:
+            start_datetime = datetime.strptime(start_date + ' 00:00', '%Y-%m-%d %H:%M')
+        except:
+            await self.bot.say("**ERROR**: Start date must be valid and in YYYY-MM-DD format.")
+            return
+
+        # Check for Valid End Date and Set
+        try:
+            end_datetime = datetime.strptime(end_date + ' 23:59', '%Y-%m-%d %H:%M')
+        except:
+            await self.bot.say("**ERROR**: End date must be valid and in YYYY-MM-DD format.")
+            return
+
+        # Server
+        server = ctx.message.server
+
+        # Get the Channels Minus Ignored Channels
+        channels = [channel for channel in server.channels if channel.id not in config.NO_STATS_CHANNELS and channel.type == discord.ChannelType.text]
+
+        # Sort the Channels
+        channels.sort(key=lambda x: x.position, reverse=False)
+        
+        # Open the CSV file
+        with open('channel_stats/stats_' + start_date + '_to_' + end_date + '.csv', mode='w') as stats_file:
+        
+            # Set the Writer
+            stat_writer = csv.writer(stats_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+            
+            # Send Starting Message
+            await self.bot.say("Starting channel stats...")
+
+            # Loop Through Channels
+            for c in channels:
+
+                # Setup Users and Messages
+                unique_users = []
+                total_messages = 0
+
+                # Get Messages
+                async for m in self.bot.logs_from(c, limit=100000, before=end_datetime, after=start_datetime):
+
+                    # Unique Users
+                    if m.author.id not in unique_users:
+                        unique_users.append(m.author.id)
+
+                    # Total Messages
+                    total_messages += 1
+
+                # Get Total users
+                total_users = len(unique_users)
+
+                # Print Stats to CSV [channel name, messages, users]
+                stat_writer.writerow(['#' + c.name, str(total_messages), str(total_users)])
+
+        # Send Complete Message
+        await self.bot.say("...Stats complete and saved to CSV.")
 
 
 def setup(bot):
