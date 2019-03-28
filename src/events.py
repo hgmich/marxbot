@@ -42,6 +42,15 @@ class Events:
     async def add_event_role(self, ctx, *, event_role_name: str):
         """Creates a joinable, pingable role for an event. Roles are purged after two weeks."""
 
+        # Check to see if the role is a substring of existing roles to prevent unjoinable/deletable roles
+        existing_roles = config.get_event_roles()
+
+        for name in existing_roles:
+            if event_role_name in name:
+                await self.bot.say("**ERROR**: This role name is too close to another event role. Please choose a "
+                                   "different role name.")
+                return
+
         # Server
         server = ctx.message.server
 
@@ -89,8 +98,13 @@ class Events:
         role_info = config.get_event_role_info(event_role_name)
 
         # Make Sure the Role Exists
-        if not role_info:
+        if not role_info or role_info is None:
             await self.bot.say("**ERROR**: No event role exists with that name.")
+            return
+
+        # Check for many roles
+        if role_info == "many":
+            await self.bot.say("**ERROR**: There are many event roles that match that name. You must be more specific.")
             return
 
         # Make sure the creator is the one trying to delete the role
