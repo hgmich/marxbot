@@ -38,8 +38,9 @@ conn = db_connect()
 conn.row_factory = lambda cursor, row: row[0]
 cur = conn.cursor()
 
-# Get Pin Channels
+# Get Pin Channels and No Stat Channels
 pin_channels = cur.execute("SELECT channel_id FROM pin_channels").fetchall()
+no_stat_channels = cur.execute("SELECT channel_id FROM no_stat_channels").fetchall()
 
 # Cleanup
 cur.close()
@@ -80,8 +81,11 @@ CONSUMER_SECRET = config["twitter_consumer_secret"]
 # Allowed Pin Channels
 ALLOWED_PIN_CHANNELS = pin_channels
 
+# No Stats Channels
+NO_STATS_CHANNELS = no_stat_channels
+
 # GAME ROSTER SETTINGS
-ALLOWED_GAME_SYSTEMS = ['bnet', 'epic', 'origin', 'psn', 'steam', 'switch', 'xbl']
+ALLOWED_GAME_SYSTEMS = ['bnet', 'epic', 'origin', 'psn', 'steam', 'switch', 'uplay', 'xbl']
 
 
 # Update Counting
@@ -260,12 +264,21 @@ def get_role_id_from_lowername(name_lower: str):
     con = db_connect()
     c = con.cursor()
 
-    sql = "SELECT id FROM joinable_roles WHERE name_lower = ?"
+    pattern = "%" + name_lower + "%"
+
+    sql = "SELECT id FROM joinable_roles WHERE name_lower LIKE ?"
 
     try:
-        c.execute(sql, (name_lower,))
-        row = c.fetchone()
-        return row[0]
+        c.execute(sql, (pattern,))
+        rows = c.fetchall()
+        count = len(rows)
+
+        if count == 1:
+            return rows[0][0]
+        elif count > 1:
+            return "many"
+        else:
+            return None
     except:
         return None
 
@@ -380,18 +393,45 @@ def remove_event_role(role_id: str):
         return False
 
 
+# Get List of Event Roles
+def get_event_roles():
+    con = db_connect()
+    con.row_factory = lambda cursor, row: row[0]
+    c = con.cursor()
+
+    sql = "SELECT role_name FROM event_roles"
+
+    # Get Roles
+    roles = c.execute(sql).fetchall()
+
+    # Cleanup
+    c.close()
+    con.close()
+
+    return roles
+
+
 # Get Event Role Info from Name
 def get_event_role_info(role_name: str):
     con = db_connect()
     con.row_factory = sqlite3.Row
     c = con.cursor()
 
-    sql = "SELECT * FROM event_roles WHERE role_name = ?"
+    pattern = "%" + role_name.lower() + "%"
+
+    sql = "SELECT * FROM event_roles WHERE LOWER(role_name) LIKE ?"
 
     try:
-        c.execute(sql, (role_name,))
-        row = c.fetchone()
-        return row
+        c.execute(sql, (pattern,))
+        rows = c.fetchall()
+        count = len(rows)
+
+        if count == 1:
+            return rows[0]
+        elif count > 1:
+            return "many"
+        else:
+            return None
     except:
         return None
 
