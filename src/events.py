@@ -113,6 +113,31 @@ class Events:
         else:
             await self.bot.say("**ERROR**: The event role could not be deleted.")
 
+    # COMMAND !events roles
+    @events.command(name='roles', pass_context=True)
+    @checks.is_member()
+    async def list_event_roles(self, ctx):
+        """Lists the available event roles."""
+
+        # Get Roles List
+        roles = config.get_event_roles()
+        roles.sort()
+
+        # Setup Message
+        message = "Below is a list of current event roles you may join. Use `!events join <role>` to join the role." \
+                  " \n```\n"
+
+        # Loop Through Roles in that Type
+        for role in roles:
+            message += role + "\n"
+
+        # Finalize Message
+        message += "```"
+
+        await self.bot.say(message)
+
+        await self.bot.delete_message(ctx.message)
+
     # COMMAND !events join
     @events.command(name='join', pass_context=True)
     @checks.is_member()
@@ -129,8 +154,12 @@ class Events:
         role_info = config.get_event_role_info(event_role_name)
 
         # Make Sure the Role Exists
-        if not role_info:
-            await self.bot.say("**ERROR**: No event role exists with that name. You must enter the role name exactly.")
+        if not role_info or role_info is None:
+            await self.bot.say("**ERROR**: No event role exists with a name like that.")
+            return
+
+        if role_info == "many":
+            await self.bot.say("**ERROR**: There are many event roles that match that name. You must be more specific.")
             return
 
         # Get the Role
@@ -140,7 +169,8 @@ class Events:
         try:
             await self.bot.add_roles(member, role)
             await self.bot.say(
-                "{0.mention}, you have successfully joined the event role **{1}**.".format(member, event_role_name))
+                "{0.mention}, you have successfully joined the event role **{1}**."
+                "".format(member, role_info['role_name']))
         except Exception as e:
             await self.bot.say(
                 "{0.mention}, there was an error giving you the event role. **Error**: ".format(member) + str(e))
@@ -161,9 +191,13 @@ class Events:
         role_info = config.get_event_role_info(event_role_name)
 
         # Make Sure the Role Exists
-        if not role_info:
+        if not role_info or role_info is None:
             await self.bot.say(
-                "**ERROR**: No event role exists with that name. You must enter the role name exactly.")
+                "**ERROR**: No event role exists with a name like that.")
+            return
+
+        if role_info == "many":
+            await self.bot.say("**ERROR**: There are many event roles that match that name. You must be more specific.")
             return
 
         # Get the Role
@@ -173,10 +207,66 @@ class Events:
         try:
             await self.bot.remove_roles(member, role)
             await self.bot.say(
-                "{0.mention}, you have successfully left the event role **{1}**.".format(member, event_role_name))
+                "{0.mention}, you have successfully left the event role **{1}**."
+                "".format(member, role_info['role_name']))
         except Exception as e:
             await self.bot.say(
                 "{0.mention}, there was an error removing the event role. **Error**: ".format(member) + str(e))
+
+    # COMMAND !events tagged
+    @events.command(name='tagged', pass_context=True)
+    @checks.is_member()
+    async def list_members_in_event_role(self, ctx, *, event_role_name: str):
+        """Lists the users who have joined the event role."""
+
+        # Get Roles List
+        role_info = config.get_event_role_info(event_role_name)
+
+        # Make Sure the Role Exists
+        if not role_info or role_info is None:
+            await self.bot.say(
+                "**ERROR**: No event role exists with a name like that.")
+            return
+
+        if role_info == "many":
+            await self.bot.say("**ERROR**: There are many event roles that match that name. You must be more specific.")
+            return
+
+        # Set Server
+        server = ctx.message.server
+
+        # Get Role ID
+        role_id = role_info['role_id']
+
+        # Get Actual Role
+        event_role = discord.utils.get(server.roles, id=role_id)
+
+        role_members = []
+
+        # Get List of Users
+        for member in server.members:
+            for role in member.roles:
+                if role == event_role:
+                    role_members.append(member.display_name)
+
+        if not role_members:
+            await self.bot.say("No users have joined this event role.")
+            return
+
+        role_members.sort()
+
+        # Setup Message
+        message = "Here is a list of users who have joined the event role **" + role_info['role_name'] + "**:" \
+                  " \n```\n"
+
+        for m in role_members:
+            message += m + "\n"
+
+        message += "```"
+
+        await self.bot.say(message)
+
+        await self.bot.delete_message(ctx.message)
 
     # COMMAND !events addcal
     @events.command(name='addcal', pass_context=True)
@@ -203,7 +293,10 @@ class Events:
 
         # Return Success/Failure Message
         if added:
-            await self.bot.say(member.mention + ", your event has been added to the calendar.")
+            await self.bot.say(member.mention + ", your event has been added to the calendar. If you have created an "
+                                                "event role, please make sure you include that role in your calendar "
+                                                "description! Use `!events editcal <event_id>` to edit your calendar "
+                                                "entry if you need to.")
         else:
             await self.bot.say("**ERROR**: " + member.mention + ", your event could not be added to the calendar.")
 
