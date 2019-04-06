@@ -42,10 +42,12 @@ class Games:
 
         # Create Embed Table
         system_name = game_system.upper()
+        icon_url = "https://survey.leftdisc.net/gameicons/" + game_system + ".png"
         embed = discord.Embed(title=system_name + " Roster", colour=9043968,
                               description="*Member Game Profiles for " + system_name + ".*")
         embed.add_field(name="Member", value=accounts, inline=True)
         embed.add_field(name="Game Data", value=names, inline=True)
+        embed.set_thumbnail(url=icon_url)
 
         # Send Table to Channel
         await self.bot.send_message(ctx.message.channel, embed=embed)
