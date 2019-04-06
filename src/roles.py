@@ -3,6 +3,7 @@ from discord.ext import commands
 from utils import checks
 from utils import config
 
+
 class Roles:
     def __init__(self, bot):
         self.bot = bot
@@ -40,6 +41,8 @@ class Roles:
 
         await self.bot.say(message)
 
+        await self.bot.delete_message(ctx.message)
+
     # COMMAND: !join
     @commands.command(name='join', pass_context=True, aliases=['iam'])
     @checks.is_member()
@@ -50,13 +53,27 @@ class Roles:
         user = ctx.message.author
         server = ctx.message.server
 
+        # Are we trying to be gay?
+        if role_name.lower() == "gay":
+            await self.bot.say("lol same")
+            return
+
         # Try to get the Role ID
         role_id = config.get_role_id_from_lowername(role_name.lower())
 
         # Check for Allowed Role
         if role_id is None:
-            await self.bot.say("{0.mention}, you must select one of the public groups to join. Use `!roles` for a list "
+            await self.bot.say("{0.mention}, you must select one of the public roles to join. Use `!roles` for a list "
                                "of roles members may join".format(user))
+            await self.bot.delete_message(ctx.message)
+            return
+
+        # Check for Specific Role
+        if role_id == "many":
+            await self.bot.say(
+                "{0.mention}, you must be more specific. There are many roles that fit that name. Use `!roles` for a "
+                "list of roles you may join.".format(user))
+            await self.bot.delete_message(ctx.message)
             return
 
         # Try to Grant the Role
@@ -66,6 +83,7 @@ class Roles:
         except Exception as e:
             await self.bot.say(
                 "{0.mention}, there was an error updating your roles. **Error**: ".format(user) + str(e))
+            await self.bot.delete_message(ctx.message)
             return
 
         # Get Role Name from ID
@@ -74,6 +92,8 @@ class Roles:
         # Success Message
         await self.bot.say(
             "{0.mention}, you have been given the role **{1}**.".format(user, role_name_full))
+
+        await self.bot.delete_message(ctx.message)
 
     # COMMAND: !leave
     @commands.command(name='leave', pass_context=True, aliases=['iamnot'])
@@ -90,7 +110,16 @@ class Roles:
 
         # Check for Allowed Role
         if role_id is None:
-            await self.bot.say("{0.mention}, you must select one of the public groups to leave.".format(user))
+            await self.bot.say("{0.mention}, you must select one of the public roles to leave.".format(user))
+            await self.bot.delete_message(ctx.message)
+            return
+
+        # Check for Specific Role
+        if role_id == "many":
+            await self.bot.say(
+                "{0.mention}, you must be more specific. There are many roles that fit that name. Use `!roles` for a "
+                "list of roles you may leave.".format(user))
+            await self.bot.delete_message(ctx.message)
             return
 
         # Try to Remove the Role
@@ -100,6 +129,7 @@ class Roles:
         except Exception as e:
             await self.bot.say(
                 "{0.mention}, there was an error updating your roles. **Error**: ".format(user) + str(e))
+            await self.bot.delete_message(ctx.message)
             return
 
         # Get Role Name from ID
@@ -108,6 +138,8 @@ class Roles:
         # Success Message
         await self.bot.say(
             "{0.mention}, your **{1}** role has been removed.".format(user, role_name_full))
+
+        await self.bot.delete_message(ctx.message)
 
 
 def setup(bot):
