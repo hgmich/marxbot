@@ -218,47 +218,47 @@ class General:
 
         await self.bot.delete_message(ctx.message)
 
-    # COMMAND: !dog
-    @commands.command(pass_context=True)
-    @checks.is_member()
-    async def dog(self, ctx):
-        """Gets a random dog picture."""
-
-        is_video = True
-
-        while is_video:
-            async with aiohttp.ClientSession() as cs:
-                async with cs.get('https://random.dog/woof.json') as r:
-                    res = await r.json()
-                    res = res['url']
-                    cs.close()
-            if res.endswith('.mp4'):
-                pass
-            else:
-                is_video = False
-
-        em = discord.Embed()
-        em.set_footer(text="Requested by: " + ctx.message.author.display_name)
-
-        await self.bot.send_message(ctx.message.channel, embed=em.set_image(url=res))
-        await self.bot.delete_message(ctx.message)
-
-    # COMMAND: !cat
-    @commands.command(pass_context=True)
-    @checks.is_member()
-    async def cat(self, ctx):
-        """Gets a random cat picture."""
-
-        async with aiohttp.ClientSession() as cs:
-            async with cs.get('http://aws.random.cat/meow') as r:
-                res = await r.json()
-                cs.close()
-
-        em = discord.Embed()
-        em.set_footer(text="Requested by: " + ctx.message.author.display_name)
-
-        await self.bot.send_message(ctx.message.channel, embed=em.set_image(url=res['file']))
-        await self.bot.delete_message(ctx.message)
+    # # COMMAND: !dog
+    # @commands.command(pass_context=True)
+    # @checks.is_admin()
+    # async def dog(self, ctx):
+    #     """Gets a random dog picture."""
+    # 
+    #     is_video = True
+    # 
+    #     while is_video:
+    #         async with aiohttp.ClientSession() as cs:
+    #             async with cs.get('https://random.dog/woof.json') as r:
+    #                 res = await r.json()
+    #                 res = res['url']
+    #                 cs.close()
+    #         if res.endswith('.mp4'):
+    #             pass
+    #         else:
+    #             is_video = False
+    # 
+    #     em = discord.Embed()
+    #     em.set_footer(text="Requested by: " + ctx.message.author.display_name)
+    # 
+    #     await self.bot.send_message(ctx.message.channel, embed=em.set_image(url=res))
+    #     await self.bot.delete_message(ctx.message)
+    # 
+    # # COMMAND: !cat
+    # @commands.command(pass_context=True)
+    # @checks.is_admin()
+    # async def cat(self, ctx):
+    #     """Gets a random cat picture."""
+    # 
+    #     async with aiohttp.ClientSession() as cs:
+    #         async with cs.get('http://aws.random.cat/meow') as r:
+    #             res = await r.json()
+    #             cs.close()
+    # 
+    #     em = discord.Embed()
+    #     em.set_footer(text="Requested by: " + ctx.message.author.display_name)
+    # 
+    #     await self.bot.send_message(ctx.message.channel, embed=em.set_image(url=res['file']))
+    #     await self.bot.delete_message(ctx.message)
 
 
 def setup(bot):
