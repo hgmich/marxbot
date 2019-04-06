@@ -356,11 +356,6 @@ class Staff:
         # Server
         server = ctx.message.server
 
-        # Start the Embed
-        # embed = discord.Embed(title="LeftDisc Channel Stats", colour=12326244)
-        # embed.set_thumbnail(url=server.icon_url)
-        # embed.set_footer(text="Stats Between " + start_date + " and " + end_date)
-
         # Get the Channels Minus Ignored Channels
         channels = [channel for channel in server.channels if channel.id not in config.NO_STATS_CHANNELS and channel.type == discord.ChannelType.text]
 
@@ -368,10 +363,6 @@ class Staff:
         channels.sort(key=lambda x: x.position, reverse=False)
 
         # Start Channel Mentions and Stats
-        # channel_mentions = ''
-        # channel_stats = ''
-        # i = 1
-
         await self.bot.say("__**CHANNEL STATS FROM " + start_date + " TO " + end_date + " **__" + "\n" +
                            "Please do not interrupt until I say all stats have been printed!")
 
@@ -395,22 +386,7 @@ class Staff:
             total_users = len(unique_users)
 
             # Print Stats
-            # print("Stats for #" + c.name + ": " + str(total_messages) + " messages, " + str(total_users) + " users")
             await self.bot.say(c.mention + ": " + str(total_messages) + " messages, " + str(total_users) + " users")
-
-            # Add To Lists
-            # channel_mentions += "**" + str(i) + "**. " + c.mention + "\n"
-            # channel_stats += "**" + str(i) + "**. " + str(total_messages) + " M, " + str(total_users) + " U\n"
-
-            # Increase Counter
-            # i += 1
-
-        # Add Stats to Embed
-        # embed.add_field(name="Channel", value=channel_mentions, inline=True)
-        # embed.add_field(name="Stats (Msgs, Users)", value=channel_stats, inline=True)
-
-        # Send Table to Channel
-        # await self.bot.send_message(ctx.message.channel, embed=embed)
 
         # Send Complete Message
         await self.bot.say("__**STATS COMPLETE**__")
