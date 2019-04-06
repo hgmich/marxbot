@@ -29,7 +29,7 @@ bot = commands.Bot(command_prefix='!', description="Karl Marxbot.")
 @bot.event
 async def on_ready():
     print('..... Marxbot has started .....')
-    await bot.change_presence(game=discord.Game(name='Bot Version 2.8'))
+    await bot.change_presence(game=discord.Game(name='Bot Version 2.9'))
 
 
 # Welcome Message
@@ -107,7 +107,7 @@ async def on_message(message):
                 await bot.send_message(message.channel, "**ALERT**: Sorry, that number is not correct! Start over at 1.")
         else:
             config.CURRENT_COUNT = 0
-            await bot.send_message(message.channel, "**ALERT**: Sorry, numbers only! Start over at 1.")
+            await bot.send_message(message.channel, "**ALERT**: Sorry, numbers only, no words, emojis, etc! Start over at 1.")
 
     # Process the rest of the Commands
     await bot.process_commands(message)
